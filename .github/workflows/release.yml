@@ -1,7 +1,9 @@
-# Distribution remains manual until ministry signing and release hosting exist.
-name: Build ministry release candidates
+name: Build signed ministry release candidates
 on:
   workflow_dispatch:
 jobs:
   installers:
     uses: ./.github/workflows/build.yml
+    with:
+      signed: true
+    secrets: inherit

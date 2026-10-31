@@ -45,7 +45,9 @@ Download available packages from [GitHub Releases](https://github.com/jerrick-go
 
 The installers are configured to include the church library, three Bibles, speech model, and English/Sinhala/Tamil OCR data. The offline payload is approximately **401 MiB before compression**; installed copies use local resources without a first-run download. Existing library records are preserved during setup and upgrades.
 
-An unsigned **Apple Silicon Mac** application has passed packaging, native speech-runtime, and offline first-launch checks. **Windows x64 and Intel Mac installer testing, signing, and notarization remain pending.** The manual [Ministry installers workflow](.github/workflows/build.yml) builds each supported target on its native platform and checks the packaged resources.
+**v1.0.0 is unsigned and is not a trusted production release.** macOS may refuse to open it. Signed replacement installers are blocked until ministry signing credentials are configured. Native Windows x64, Intel Mac, and Apple Silicon Mac packaging and payload checks passed; clean-machine acceptance still needs validation.
+
+Stable publishing now requires valid Windows signatures and Mac Developer ID signatures, notarization, stapled tickets, and Gatekeeper acceptance. Unsigned development builds remain available for testing, but the publisher rejects them. See the [signing setup and release checklist](docs/RELEASE_SIGNING.md).
 
 Online song discovery requires an internet connection. Review sources and provide lyrics you have permission to use before adding them to the library. Optional alternative recognition and chat models are separate from the bundled default model.
 

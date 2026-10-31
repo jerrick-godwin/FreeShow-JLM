@@ -1,5 +1,6 @@
 appId: app.freeshow
 productName: Jesus Lives Ministry
+forceCodeSigning: true
 artifactName: Jesus-Lives-Ministry-${version}-${os}-${arch}.${ext}
 
 files:
@@ -101,7 +102,7 @@ mac:
     category: public.app-category.utilities
     hardenedRuntime: true
     gatekeeperAssess: false
-    notarize: false
+    notarize: true
     entitlements: scripts/macos/entitlements.mac.plist
     entitlementsInherit: scripts/macos/entitlements.mac.plist
     extendInfo:
@@ -119,7 +120,7 @@ afterExtract: scripts/opus.js
 
 dmg:
     backgroundColor: "#0E3B5E"
-    sign: false
+    sign: true
     contents:
         - x: 140
           y: 150

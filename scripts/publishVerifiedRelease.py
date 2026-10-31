@@ -15,6 +15,18 @@ def data(*args):
     return json.loads(run(*args, capture=True).stdout)
 
 
+def require_signed_jobs(jobs):
+    expected = {'installer (windows-2022, win, nsis, x64)',
+                'installer (macos-15-intel, mac, dmg zip, x64)',
+                'installer (macos-15, mac, dmg zip, arm64)'}
+    if {job['name'] for job in jobs} != expected:
+        raise ValueError('Unexpected installer job matrix')
+    for job in jobs:
+        checks = [step for step in job.get('steps', []) if step['name'] == 'Verify signed release artifacts']
+        if len(checks) != 1 or checks[0]['conclusion'] != 'success':
+            raise ValueError('Every platform must pass signature and notarization verification')
+
+
 def main():
     tag, build_id, repo = (os.environ[key] for key in ('RELEASE_TAG', 'ARTIFACT_RUN_ID', 'GITHUB_REPOSITORY'))
     if not re.fullmatch(r'v\d+\.\d+\.\d+', tag) or not build_id.isdecimal():
@@ -23,15 +35,19 @@ def main():
     if build['conclusion'] != 'success' or build['status'] != 'completed' or build['head_repository']['full_name'].lower() != repo.lower():
         raise ValueError('Only successful installer runs from this repository are accepted')
     jobs = data('gh', 'api', f'repos/{repo}/actions/runs/{build_id}/jobs?per_page=100')['jobs']
+    jobs = [job for job in jobs if job['name'].startswith('installer (')]
     if len(jobs) != 3 or any(job['conclusion'] != 'success' for job in jobs):
         raise ValueError('All three native installer jobs must pass')
+    require_signed_jobs(jobs)
+    if build['path'] != '.github/workflows/build.yml':
+        raise ValueError('Only the trusted installer workflow may publish releases')
     commit = run('git', 'rev-parse', f'refs/tags/{tag}^{{}}', capture=True).stdout.strip()
     run('git', 'merge-base', '--is-ancestor', commit, 'origin/main')
     version = tag[1:]
     if data('git', 'show', f'{commit}:package.json')['version'] != version:
         raise ValueError('Package version differs from the tag')
     changed = run('git', 'diff', '--name-only', build['head_sha'], commit, capture=True).stdout.splitlines()
-    if any(path != '.github/workflows/winget.yml' for path in changed):
+    if changed:
         raise ValueError('Installer inputs differ from the tagged release')
     expected_groups = {'Jesus-Lives-Ministry-win-x64', 'Jesus-Lives-Ministry-mac-x64', 'Jesus-Lives-Ministry-mac-arm64'}
     artifacts = data('gh', 'api', f'repos/{repo}/actions/runs/{build_id}/artifacts')['artifacts']
@@ -55,7 +71,7 @@ def main():
     checksums = Path('SHA256SUMS')
     checksums.write_text('\n'.join(hashes) + '\n')
     notes = run('git', 'show', f'{commit}:CHANGELOG.md', capture=True).stdout
-    notes += f'\n## Verified builds\n\nUnit tests, production builds, bundled asset checks, and native speech-runtime checks passed for Windows x64, Intel Mac, and Apple Silicon Mac. [Build results](https://github.com/{repo}/actions/runs/{build_id}).\n\nInstaller inputs were checked against `{tag}` at `{commit}`. The subsequent cleanup only removed the inherited upstream publisher. `SHA256SUMS` lists installer checksums.\n'
+    notes += f'\n## Verified builds\n\nUnit tests, production builds, bundled asset checks, and native speech-runtime checks passed for Windows x64, Intel Mac, and Apple Silicon Mac. [Build results](https://github.com/{repo}/actions/runs/{build_id}).\n\nInstaller inputs were checked against `{tag}` at `{commit}`. All three native jobs passed release-signature verification. Mac app archives and disk images passed Gatekeeper and stapled notarization checks; Windows executables passed Authenticode and timestamp checks. `SHA256SUMS` lists installer checksums.\n'
     Path('RELEASE_NOTES.md').write_text(notes)
     existing = run('gh', 'release', 'view', tag, '--repo', repo, '--json', 'isDraft', capture=True, check=False)
     if existing.returncode == 0:
