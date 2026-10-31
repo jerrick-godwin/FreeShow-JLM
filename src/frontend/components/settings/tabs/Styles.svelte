@@ -1,7 +1,9 @@
 <script lang="ts">
+    import { ensureIndependentLayouts } from "../../../utils/contentLayouts"
+    import { contentBackground } from "../../../../shared/contentLayouts"
     import { uid } from "uid"
     import type { AspectRatio, Resolution, Styles } from "../../../../types/Settings"
-    import { activeDrawerTab, activeEdit, activePage, activeStyle, drawerTabsData, outputs, styles, templates } from "../../../stores"
+    import { activeDrawerTab, activeEdit, activePage, activeStyle, drawerTabsData, outputs, scriptureSettings, styles, templates } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import { transitionTypes } from "../../../utils/transitions"
     import { mediaExtensions } from "../../../values/extensions"
@@ -35,6 +37,7 @@
 
         history({ id: "UPDATE", newData: { key, data: value }, oldData: { id: currentId }, location: { page: "settings", id: "settings_style", override: "style_" + key } })
 
+        ensureIndependentLayouts()
         styleId = currentId
     }
 
@@ -67,10 +70,11 @@
     $: styleId = $activeStyle || Object.keys($styles)[0] || ""
     $: currentStyle = $styles[styleId] || clone(defaultStyle)
 
-    $: styleTemplate = $templates[currentStyle.template || ""] || {}
-    $: styleTemplateScripture = $templates[currentStyle.templateScripture || ""] || {}
-    $: templateBackground = styleTemplate.settings?.backgroundColor || styleTemplateScripture.settings?.backgroundColor
-    $: templateBackgroundImage = styleTemplate.settings?.backgroundPath || styleTemplateScripture.settings?.backgroundPath
+    $: styleTemplate = $templates[currentStyle.template || "default"] || {}
+    $: styleTemplateScripture = $templates[currentStyle.templateScripture || $scriptureSettings.template || "scripture"] || {}
+    $: selectedTemplate = backgroundContent === "bible" ? styleTemplateScripture : styleTemplate
+    $: templateBackground = selectedTemplate.settings?.backgroundColor
+    $: templateBackgroundImage = selectedTemplate.settings?.backgroundPath
 
     function getAspectRatio(resolution: Resolution | undefined): AspectRatio {
         if (!resolution || (resolution.width === 1920 && resolution.height === 1080)) return { width: 16, height: 9 }
@@ -98,7 +102,7 @@
     $: metadataDisplay = currentStyle.metadata?.display || "default"
     $: textTransitionData = transitionTypes.find((a) => a.id === currentStyle.transition?.text?.type)
 
-    $: bgImage = currentStyle.backgroundImage
+    $: bgImage = selectedBackground.image
     function editBackgroundImage() {
         activeEdit.set({ type: "media", id: bgImage, items: [] })
         activePage.set("edit")
@@ -117,10 +121,16 @@
 
     // TEMPLATE OVERRIDE
 
-    $: templateOverride = currentStyle.template || ""
-    $: templateOverrideScripture = currentStyle.templateScripture || ""
-    $: scriptureTemplateLabel = currentStyle.templateScripture ? $templates[currentStyle.templateScripture || ""]?.name : currentStyle.templateScripture_2 ? $templates[currentStyle.templateScripture_2 || ""]?.name + " (2)" : currentStyle.templateScripture_3 ? $templates[currentStyle.templateScripture_3 || ""]?.name + " (3)" : currentStyle.templateScripture_4 ? $templates[currentStyle.templateScripture_4 || ""]?.name + " (4)" : ""
+    $: templateOverride = currentStyle.template || "default"
+    $: templateOverrideScripture = currentStyle.templateScripture || $scriptureSettings.template || "scripture"
+    $: scriptureTemplateLabel = currentStyle.templateScripture ? $templates[currentStyle.templateScripture || $scriptureSettings.template || "scripture"]?.name : currentStyle.templateScripture_2 ? $templates[currentStyle.templateScripture_2 || ""]?.name + " (2)" : currentStyle.templateScripture_3 ? $templates[currentStyle.templateScripture_3 || ""]?.name + " (3)" : currentStyle.templateScripture_4 ? $templates[currentStyle.templateScripture_4 || ""]?.name + " (4)" : ""
 
+    let backgroundContent: "song" | "bible" = "song"
+    $: selectedBackground = contentBackground(currentStyle, backgroundContent === "bible")
+    function updateContentBackground(key: "color" | "image", value: string) {
+        const field = backgroundContent === "bible" ? "bibleBackground" : "songBackground"
+        updateStyle({ ...currentStyle[field], [key]: value }, field)
+    }
     function editTemplate(id: string) {
         activeDrawerTab.set("templates")
         activeEdit.set({ type: "template", id, items: [] })
@@ -150,10 +160,17 @@
     }
 </script>
 
-<MaterialColorInput label="edit.background_color{templateBackground ? ' <span style="color: var(--text);opacity: 0.5;font-weight: normal;font-size: 0.6em;">settings.overrided_value<span>' : ''}" value={currentStyle.background || "#000000"} defaultValue="#000000" on:input={(e) => updateStyle(e, "background")} />
+<div style="display:flex;gap:8px;margin-bottom:8px;">
+    <MaterialButton isActive={backgroundContent === "song"} on:click={() => (backgroundContent = "song")}>Song Lyrics background</MaterialButton>
+    <MaterialButton isActive={backgroundContent === "bible"} on:click={() => (backgroundContent = "bible")}>Bible Verses background</MaterialButton>
+    <MaterialButton on:click={() => updateStyle(undefined, backgroundContent === "bible" ? "bibleBackground" : "songBackground")}>Use shared background</MaterialButton>
+</div>
+<div data-testid="content-background-color">
+    <MaterialColorInput label="edit.background_color{templateBackground ? ' <span style="color: var(--text);opacity: 0.5;font-weight: normal;font-size: 0.6em;">settings.overrided_value<span>' : ''}" value={selectedBackground.color || "#000000"} defaultValue="#000000" on:input={(e) => updateContentBackground("color", e.detail)} />
+</div>
 
-<InputRow arrow={!!(currentStyle.backgroundImage && (currentStyle.clearStyleBackgroundOnText || activeLayers.includes("slide")))}>
-    <MaterialFilePicker label="edit.background_media{templateBackgroundImage && bgImage ? ' <span style="color: var(--text);opacity: 0.5;font-weight: normal;">settings.overrided_value<span>' : ''}" value={bgImage} filter={{ name: "Media files", extensions: mediaExtensions }} on:change={(e) => updateStyle(e, "backgroundImage")} allowEmpty />
+<InputRow arrow={!!(bgImage && (currentStyle.clearStyleBackgroundOnText || activeLayers.includes("slide")))}>
+    <MaterialFilePicker label="edit.background_media{templateBackgroundImage && bgImage ? ' <span style="color: var(--text);opacity: 0.5;font-weight: normal;">settings.overrided_value<span>' : ''}" value={selectedBackground.image || ""} filter={{ name: "Media files", extensions: mediaExtensions }} on:change={(e) => updateContentBackground("image", e.detail)} allowEmpty />
     {#if bgImage}
         <MaterialButton title="titlebar.edit" icon="edit" on:click={editBackgroundImage} />
     {/if}
@@ -185,7 +202,7 @@
 
 <InputRow>
     <!-- WIP doubleClick ?? -->
-    <MaterialPopupButton label="settings.override_with_template" disabled={!activeLayers.includes("slide")} value={templateOverride} name={$templates[templateOverride]?.name} popupId="select_template" icon="templates" on:change={(e) => updateStyle(e.detail, "template")} allowEmpty />
+    <MaterialPopupButton label="Song Lyrics layout" disabled={!activeLayers.includes("slide")} value={templateOverride} name={$templates[templateOverride]?.name} popupId="select_template" icon="templates" on:change={(e) => updateStyle(e.detail, "template")} allowEmpty />
     {#if templateOverride && $templates[templateOverride]}
         <MaterialButton title="titlebar.edit" icon="edit" on:click={() => editTemplate(templateOverride)} />
     {/if}
@@ -193,7 +210,7 @@
 
 {#if $drawerTabsData?.scripture?.enabled !== false}
     <InputRow>
-        <MaterialPopupButton id="scripture" label="settings.override_scripture_with_template" disabled={!activeLayers.includes("slide")} value={templateOverrideScripture || currentStyle.templateScripture_2 || currentStyle.templateScripture_3 || currentStyle.templateScripture_4} name={scriptureTemplateLabel} popupId="select_template" icon="templates" on:change={updateScriptureTemplate} allowEmpty />
+        <MaterialPopupButton id="scripture" label="Bible Verses layout" disabled={!activeLayers.includes("slide")} value={templateOverrideScripture || currentStyle.templateScripture_2 || currentStyle.templateScripture_3 || currentStyle.templateScripture_4} name={scriptureTemplateLabel || $templates[templateOverrideScripture]?.name} popupId="select_template" icon="templates" on:change={updateScriptureTemplate} allowEmpty />
         {#if templateOverrideScripture && $templates[templateOverrideScripture]}
             <MaterialButton title="titlebar.edit" icon="edit" on:click={() => editTemplate(templateOverrideScripture)} />
         {/if}

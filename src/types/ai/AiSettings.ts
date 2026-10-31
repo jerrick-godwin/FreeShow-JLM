@@ -1,5 +1,7 @@
+import type { LiveOptions } from "./Live"
 export interface AiSettings {
     enabled?: boolean
+    live?: LiveOptions
     stt?: SttSettings
     llm?: LlmSettings
 

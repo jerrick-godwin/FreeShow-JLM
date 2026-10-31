@@ -2,7 +2,6 @@
     import { onDestroy } from "svelte"
     import { fade } from "svelte/transition"
     import MaterialButton from "../../../components/inputs/MaterialButton.svelte"
-    import MaterialToggleSwitch from "../../../components/inputs/MaterialToggleSwitch.svelte"
     import Tabs from "../../../components/main/Tabs.svelte"
     import { activePage, activeTriggerFunction, ai, aiSmartAction, aiSttStatus, language, mediaDownloads, settingsTab, sttTempDisabled, sttTranscript } from "../../../stores"
     import { audioLevelStore, resolveSttEngine, SpeechToText } from "../../stt/stt"
@@ -82,7 +81,8 @@
     }
 
     // STATE & SYNCHRONIZATION
-    $: isEnabled = $ai.enabled
+    let listeningRequested = false
+    $: isEnabled = $ai.enabled && !$sttTempDisabled && listeningRequested
     $: micDeviceId = $ai.stt?.micDeviceId
 
     let lastMic = ""
@@ -94,49 +94,24 @@
     }
 
     let sessionToken = 0
-    $: syncSession(isEnabled, micDeviceId, engineId)
-    async function syncSession(enabled: boolean | undefined, mic: string | undefined, engine: string) {
-        const currentLock = ++sessionToken
+    $: engineConfiguration = JSON.stringify($ai.stt?.engineOptions?.[engineId] || {})
+    $: syncSession(isEnabled, micDeviceId, engineId, engineConfiguration)
+    async function syncSession(enabled: boolean | undefined, mic: string | undefined, engine: string, configuration: string) {
         const shouldBeActive = Boolean(enabled && mic)
-        const micChanged = (mic || "") !== lastMic
-        const engineChanged = engine !== lastEngine
-
-        if (shouldBeActive) {
-            const isCurrentlyActive = state === "listening" || state === "processing" || state === "loading"
-            if (isCurrentlyActive && !micChanged && !engineChanged) return
-
-            const wasInactive = state === "inactive"
-            state = "loading"
-
-            lastMic = mic || ""
-            lastEngine = engine
-
-            if (wasInactive) {
-                const result = await SpeechToText.enable()
-                if (currentLock !== sessionToken || result.aborted) return
-                state = result.ok ? "listening" : "error"
-            } else {
-                const capture = micChanged ? await SpeechToText.restartCapture() : { ok: true }
-                if (currentLock !== sessionToken || capture.aborted) return
-
-                const engineResult = engineChanged ? await SpeechToText.restartEngine() : { ok: true }
-                if (currentLock !== sessionToken || engineResult.aborted) return
-
-                if (!capture.ok || !engineResult.ok) state = "error"
-                else state = "listening"
-            }
+        const engineKey = engine + configuration
+        if (shouldBeActive && (state === "listening" || state === "loading" || state === "processing") && mic === lastMic && engineKey === lastEngine) return
+        const currentLock = ++sessionToken
+        lastMic = mic || ""
+        lastEngine = engineKey
+        if (!shouldBeActive) {
+            if (state !== "inactive") SpeechToText.disable()
+            state = "inactive"
             return
         }
-
-        lastMic = mic || ""
-        lastEngine = engine
-
-        if (state !== "inactive") {
-            SpeechToText.disable()
-            if (currentLock === sessionToken) {
-                state = "inactive"
-            }
-        }
+        state = "loading"
+        const result = await SpeechToText.enable()
+        if (currentLock !== sessionToken || result.aborted) return
+        state = result.ok ? "listening" : "error"
     }
 
     $: if (state === "listening" && $aiSttStatus.state === "error") {
@@ -163,12 +138,13 @@
         const turnOn = enable === undefined ? !isListening : enable
         if (turnOn) {
             if (isListening) return
-            sttTempDisabled.set(false)
-            enableListening()
+            listeningRequested = true
+            if ($sttTempDisabled) sttTempDisabled.set(false)
+            else enableListening()
         } else {
             if (!isListening && state === "inactive") return
             sttTempDisabled.set(true)
-            SpeechToText.stopCapture()
+            SpeechToText.disable()
             state = "inactive"
         }
     }
@@ -177,11 +153,13 @@
     $: isStarting = state === "processing"
 
     async function enableListening() {
-        if (isStarting || !isEnabled || !micDeviceId) return
+        if (isStarting || state === "loading" || !isEnabled || !micDeviceId) return
         if (isListening) return
 
+        state = "loading"
+        const currentLock = ++sessionToken
         const result = await SpeechToText.enable()
-        if (result.aborted) return
+        if (currentLock !== sessionToken || result.aborted) return
         if (isEnabled && micDeviceId) state = result.ok ? "listening" : "error"
     }
 
@@ -213,7 +191,7 @@
 
                     <div class="headerActions">
                         {#if activeTab === "transcription"}
-                            <MaterialToggleSwitch label="" checked={isListening} disabled={state !== "inactive" && state !== "listening"} style="margin-right: 5px;" on:change={() => toggleListening()} small />
+                            <MaterialButton variant="outlined" disabled={state === "loading" || state === "processing"} on:click={() => toggleListening()}>{isListening ? "Stop listening" : state === "error" ? "Retry listening" : "Start listening"}</MaterialButton>
                         {/if}
 
                         <MaterialButton icon="settings" title="menu.settings" style="padding: 10px;" on:click={openSettings} />

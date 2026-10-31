@@ -1,12 +1,12 @@
 {
     "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-    "name": "CamShow",
-    "short_name": "CamShow",
+    "name": "Jesus Lives Ministry Camera",
+    "short_name": "JLM Camera",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#242832",
-    "theme_color": "#242832",
-    "description": "A camera app for FreeShow.",
+    "background_color": "#0E3B5E",
+    "theme_color": "#0E3B5E",
+    "description": "Camera for Jesus Lives Evangelical International Ministry.",
     "icons": [
         {
             "src": "icon.png",

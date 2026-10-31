@@ -1,4 +1,5 @@
 <script lang="ts">
+    import LiveControls from "./ai/components/floating/LiveControls.svelte"
     import AiFloating from "./ai/components/floating/AiFloating.svelte"
     import { customActionActivation } from "./components/actions/actions"
     import DrawTabs from "./components/draw/DrawTabs.svelte"
@@ -125,6 +126,7 @@
 
     {#if $ai.enabled}
         <AiFloating />
+        <LiveControls />
     {/if}
 
     <Tipbar />

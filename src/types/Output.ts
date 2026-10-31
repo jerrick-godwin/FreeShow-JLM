@@ -1,3 +1,4 @@
+import type { CaptionCue } from "./ai/Live"
 import type { Cropping, Resolution } from "./Settings"
 import type { OutBackground, OutScene, OutSlide, OutTransition } from "./Show"
 
@@ -72,6 +73,7 @@ export interface RtmpStatus {
 }
 
 export interface OutData {
+    caption?: CaptionCue | null
     refresh?: number
     background?: null | OutBackground
     slide?: null | OutSlide

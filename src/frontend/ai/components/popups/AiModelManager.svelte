@@ -9,6 +9,7 @@
     import { resolveSttEngine } from "../../stt/stt"
     import LlmFiles from "./LlmFiles.svelte"
     import LlmOptions from "./LlmOptions.svelte"
+    import WhisperOptions from "./WhisperOptions.svelte"
     import NemotronOptions from "./NemotronOptions.svelte"
 
     const mode = $popupData.mode
@@ -32,6 +33,7 @@
     }
 
     const sttEngines = [
+        { value: "whisper", label: "Multilingual local recognition", data: "English, Sinhala, Tamil; works offline after download." },
         { value: "nemotron", label: "Nemotron", data: "Transcribes as you speak, so references are picked up almost immediately. Supports around 40 languages." }
         // other models in the future?
     ]
@@ -61,7 +63,9 @@
 
     <MaterialDropdown label="ai.engine" options={sttEngines} value={selectedSttEngine} on:change={(e) => updateValue("stt.engine", e.detail)} />
 
-    {#if selectedSttEngine === "nemotron"}
+    {#if selectedSttEngine === "whisper"}
+        <WhisperOptions />
+    {:else if selectedSttEngine === "nemotron"}
         <NemotronOptions />
     {/if}
 {/if}

@@ -1,6 +1,9 @@
 const { readdirSync, existsSync, lstatSync, unlinkSync, rmdirSync, readFileSync, writeFileSync, copyFileSync } = require("fs")
 const { join } = require("path")
 
+// A release must contain the complete verified offline library and recognition payload.
+require("node:child_process").execFileSync(process.execPath, [join(__dirname, "prepareBundledAssets.js")], { stdio: "inherit" })
+
 // app build file paths
 const buildSveltePath = join(__dirname, "..", "public", "build")
 const buildElectronPath = join(__dirname, "..", "build") // this includes server files

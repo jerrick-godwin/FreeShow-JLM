@@ -1,4 +1,5 @@
 import type { SaveListSettings, SaveListSyncedSettings } from "../../types/Save"
+import { applyFeatureDefaults } from "../../shared/featureDefaults"
 
 export const defaultConfig = { loaded: false, maximized: true, bounds: { width: 800, height: 600, x: 0, y: 0 }, dataPath: null, disableHardwareAcceleration: null, graphicsDevice: null }
 
@@ -49,7 +50,7 @@ export const defaultSettings: { [key in SaveListSettings]: any } = {
     },
     slidesOptions: { columns: 4, mode: "grid" },
     mediaOptions: { columns: 5, mode: "grid" },
-    drawerTabsData: {},
+    drawerTabsData: { scripture: { activeSubTab: "jl-trilingual" } },
     drawer: { height: 300, stored: null },
     language: null,
     customFonts: [],
@@ -86,7 +87,7 @@ export const defaultSettings: { [key in SaveListSettings]: any } = {
         }
     },
     obsData: {},
-    ai: {}
+    ai: applyFeatureDefaults()
 }
 
 export const defaultSyncedSettings: { [key in SaveListSyncedSettings]: any } = {

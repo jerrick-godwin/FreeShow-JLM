@@ -3,7 +3,7 @@
     import { uid } from "uid"
     import { Main } from "../../../../types/IPC/Main"
     import { requestMain, sendMain } from "../../../IPC/main"
-    import { scriptures } from "../../../stores"
+    import { activePopup, popupData, scriptures } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import { replace } from "../../../utils/languageData"
     import { customBibleData, getApiBiblesList } from "../../drawer/bible/scripture"
@@ -112,6 +112,14 @@
     }
 </script>
 
+<MaterialButton
+    icon="import"
+    on:click={() => {
+        popupData.set({ target: "bible", popupTitle: "Import Bible" })
+        activePopup.set("document_import")
+    }}>Import Bible from PDF, Word, CSV, or text</MaterialButton
+>
+
 {#if importType}
     <MaterialButton class="popup-back" icon="back" iconSize={1.3} title="actions.back" on:click={() => (importType = "")} />
 {/if}
@@ -175,7 +183,7 @@
         </li>
         <li>
             <span style="font-size: 0.9em;font-weight: bold;">JSON</span>
-            <span style="font-size: 0.8em;opacity: 0.8;margin-left: 10px;">FreeShow</span>
+            <span style="font-size: 0.8em;opacity: 0.8;margin-left: 10px;">Native Bible</span>
         </li>
     </ul>
 

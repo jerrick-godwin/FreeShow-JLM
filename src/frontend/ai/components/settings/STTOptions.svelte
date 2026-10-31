@@ -3,6 +3,8 @@
     import type { EngineStatus } from "../../../../types/ai/Ai"
     import { requestMain } from "../../../IPC/main"
     import { AudioMicrophone } from "../../../audio/audioMicrophone"
+    import MaterialButton from "../../../components/inputs/MaterialButton.svelte"
+    import { activePopup, popupData } from "../../../stores"
     import Title from "../../../components/input/Title.svelte"
     import MaterialDropdown from "../../../components/inputs/MaterialDropdown.svelte"
     import Tip from "../../../components/main/Tip.svelte"
@@ -28,7 +30,7 @@
         const result = await requestMain(Main.AI_GET_STATUS, { engineId: selectedEngine })
         status = result?.[selectedEngine] || null
 
-        if (status?.ready) getMicrophones()
+        getMicrophones()
     }
 
     // update status every time a download finishes
@@ -54,31 +56,44 @@
         })
     }
 
-    // const sttEngines = {
-    //     nemotron: { label: "Nemotron" }
-    // }
+    function engineOption(key: string, value: string) {
+        ai.update((settings) => ({ ...settings, stt: { ...settings.stt, engineOptions: { ...settings.stt?.engineOptions, [selectedEngine]: { ...settings.stt?.engineOptions?.[selectedEngine], [key]: value } } } }))
+    }
     $: selectedEngine = $ai.stt?.engine || resolveSttEngine()
 </script>
 
 <Title label="ai.transcription" icon="microphone" />
-
-<!-- Currently not needed as there's just one engine -->
-<!-- <InputRow>
-    <MaterialButton
-        title="titlebar.edit"
-        icon="edit"
-        style="width: 100%;"
-        on:click={() => {
-            popupData.set({ mode: "transcription" })
-            activePopup.set("ai_model_manager")
-        }}
-    >
-        <T id="ai.engine" />: <span style="font-weight: bold;">{sttEngines[selectedEngine]?.label}</span>
-    </MaterialButton>
-</InputRow> -->
+<MaterialDropdown
+    label="Speech recognition"
+    options={[
+        { value: "whisper", label: "Multilingual local recognition" },
+        { value: "nemotron", label: "Nemotron streaming recognition" }
+    ]}
+    value={selectedEngine}
+    on:change={(e) => updateValue("engine", e.detail)}
+/>
+<MaterialDropdown
+    label="Spoken language"
+    value={$ai.stt?.engineOptions?.[selectedEngine]?.language || (selectedEngine === "whisper" ? "auto" : "en")}
+    options={selectedEngine === "whisper"
+        ? [
+              { value: "auto", label: "Detect language automatically" },
+              { value: "en", label: "English" },
+              { value: "si", label: "Sinhala" },
+              { value: "ta", label: "Tamil" }
+          ]
+        : [{ value: "en", label: "English" }]}
+    on:change={(e) => engineOption("language", e.detail)}
+/>
+<MaterialButton
+    on:click={() => {
+        popupData.set({ mode: "transcription" })
+        activePopup.set("ai_model_manager")
+    }}>Set up speech model</MaterialButton
+>
 
 {#if status?.ready}
-    <MaterialDropdown label="midi.input" options={microphones} value={options.micDeviceId || ""} on:change={(e) => updateValue("micDeviceId", e.detail)} />
+    <MaterialDropdown label="Microphone" options={microphones} value={options.micDeviceId || ""} on:change={(e) => updateValue("micDeviceId", e.detail)} />
 {:else}
     <Tip type="warning" value={status?.error || "No model available."} />
 {/if}

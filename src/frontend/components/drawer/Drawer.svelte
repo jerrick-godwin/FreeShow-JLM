@@ -284,17 +284,14 @@
             {/each}
         </span>
 
-        <input bind:this={searchElem} class:hidden={!searchActive && !searchValue.length} class="search edit drawer_search" type="text" placeholder={translateText("main.search...", $dictionary)} bind:value={searchValue} on:input={search} on:keydown={searchKeydown} use:selectTextOnFocus />
-        {#if !searchActive && !searchValue.length}
+        <input bind:this={searchElem} class:hidden={$activeDrawerTab !== "scripture" && !searchActive && !searchValue.length} class="search edit drawer_search" type="text" placeholder={$activeDrawerTab === "scripture" ? "Book, reference, or verse words…" : translateText("main.search...", $dictionary)} bind:value={searchValue} on:input={search} on:keydown={searchKeydown} use:selectTextOnFocus />
+        {#if $activeDrawerTab !== "scripture" && !searchActive && !searchValue.length}
             <Button class="search" style="border-bottom: 2px solid var(--secondary);" on:click={() => (searchActive = true)} title={translateText("tabs.search_tip [Ctrl+F]")} bold={false}>
                 <Icon id="search" size={1.4} white right={!$labelsDisabled && !$focusMode} />
                 {#if !$labelsDisabled && !$focusMode}<p style="opacity: 0.8;font-size: 1.1em;"><T id="main.search" /></p>{/if}
             </Button>
         {:else}
             {#if $activeDrawerTab === "scripture"}
-                <div class="clearSearch autocomplete">
-                    <Icon id="autofill" white />
-                </div>
                 <div class="clearSearch options" on:mousedown|stopPropagation on:mouseup|stopPropagation>
                     <Button style="height: 100%;" title={translateText("edit.options")} on:click={() => activePopup.set("drawer_search_options")}>
                         <Icon id="options" white={!$scriptureSettings.enterSwapped} />
@@ -400,13 +397,6 @@
     }
     .clearSearch.options {
         right: 40px;
-    }
-    .clearSearch.autocomplete {
-        right: 90px;
-        display: flex;
-        align-items: center;
-        opacity: 0.2;
-        pointer-events: none;
     }
 
     .hidden {

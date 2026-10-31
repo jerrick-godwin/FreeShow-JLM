@@ -3,7 +3,7 @@
         "welcome": "Vitajte",
         "quit": "Ukončiť",
         "docs": "Dokumentácia",
-        "about": "O FreeShow",
+        "about": "O Jesus Lives Ministry",
         "unnamed": "Bez názvu",
         "drop": "Pusti sem",
         "search": "Hľadať",
@@ -55,7 +55,7 @@
         "libraries": "Použité knižnice",
         "thanks": "Ďakujeme",
         "new_update": "Aktualizácia je k dispozícii",
-        "download": "Aplikáciu aktualizujete reštartovaní, alebo prejdite na freeshow.app a stiahnite ručne",
+        "download": "O aktualizovaný inštalátor požiadajte správcu služby.",
         "changes": "Čo je nové"
     },
     "tooltip": {
@@ -458,7 +458,7 @@
         "manage_metadata": "Spravovať metadáta",
         "choose_camera": "Zvoľte kameru",
         "manage_tags": "Spravovať značky",
-        "initialize": "Vitajte vo FreeShow",
+        "initialize": "Vitajte vo Jesus Lives Ministry",
         "unsaved": "Naozaj si prajete skončiť?",
         "cancel": "Zrušiť",
         "continue": "Pokračovať",

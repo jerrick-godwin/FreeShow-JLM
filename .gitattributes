@@ -1,2 +1,6 @@
 # Collapse the generated lockfile in diffs.
 package-lock.json linguist-generated=true
+
+# Bundled assets are verified byte-for-byte on every operating system.
+resources/bundled/** -text
+resources/bundled/licenses/world-english-bible.html whitespace=cr-at-eol

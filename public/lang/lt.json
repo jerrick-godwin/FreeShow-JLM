@@ -56,7 +56,7 @@
         "libraries": "Naudotos bibliotekos",
         "thanks": "Dėkojame",
         "new_update": "Yra prieinamas naujas atnaujinimas",
-        "download": "Norėdami atnaujinti programą paleiskite ją iš naujo arba apsilankykite freeshow.app, kad atsisiųstumėte rankiniu būdu",
+        "download": "Dėl atnaujintos diegimo programos kreipkitės į tarnystės administratorių.",
         "changes": "Kas naujo"
     },
     "tooltip": {
@@ -474,7 +474,7 @@
         "manage_tags": "Manage tags",
         "sync_categories": "Select categories to sync",
         "effect_items": "Effect items",
-        "initialize": "Jus sveikina FreeShow",
+        "initialize": "Jus sveikina Jesus Lives Ministry",
         "unsaved": "Ar tikrai norite išeiti?",
         "cancel": "Atsisakyti",
         "continue": "Tęsti",

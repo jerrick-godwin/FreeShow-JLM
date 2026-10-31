@@ -1,3 +1,4 @@
+import "./branding"
 // ----- FreeShow -----
 // This is the electron entry point
 
@@ -76,7 +77,7 @@ config.set("loaded", true)
 if (!config.get("loaded")) console.error("Could not get stored data!")
 
 // info
-console.info("Starting FreeShow...")
+console.info("Starting Jesus Lives Ministry...")
 if (!isProd) console.info("Building app! (This may take 5-40 seconds)")
 
 // set application menu

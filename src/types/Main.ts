@@ -439,6 +439,7 @@ export type Popups =
     | "media_fit"
     | "metadata_display"
     | "import_scripture"
+    | "document_import"
     | "import_calendar"
     | "create_collection"
     | "edit_event"

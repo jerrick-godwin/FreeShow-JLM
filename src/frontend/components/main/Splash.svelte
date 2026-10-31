@@ -1,4 +1,5 @@
 <script lang="ts">
+    import MinistryBrand from "../../../shared/components/MinistryBrand.svelte"
     import { onMount } from "svelte"
     import { activePopup, activeProject, projects, projectView, quickSearchActive, showRecentlyUsedProjects, shows, special, version } from "../../stores"
     import { history } from "../helpers/history"
@@ -47,7 +48,7 @@
 </script>
 
 <Center class="context #splash">
-    <h1>FreeShow</h1>
+    <MinistryBrand branch={$special.branchName || ""} />
     <p style="opacity: 0.7;">v{$version}</p>
     {#if $special.splashText}
         <p style="padding-top: 30px">
@@ -99,11 +100,6 @@
 </Center>
 
 <style>
-    h1 {
-        font-size: 4em;
-        overflow: initial;
-    }
-
     p {
         overflow: initial;
     }
@@ -129,21 +125,5 @@
     }
     .votd :global(a) {
         text-decoration: none;
-    }
-
-    @media screen and (max-height: 500px) {
-        h1 {
-            font-size: 3em;
-        }
-    }
-    @media screen and (max-height: 400px) {
-        h1 {
-            font-size: 2em;
-        }
-    }
-    @media screen and (max-width: 800px) {
-        h1 {
-            font-size: 2em;
-        }
     }
 </style>
