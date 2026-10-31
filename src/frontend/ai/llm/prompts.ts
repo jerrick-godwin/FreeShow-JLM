@@ -79,7 +79,7 @@ export function getSlideChatSystemPrompt(targetType: "slide" | "overlay" | "temp
 
     // prompt does require some work
     return `
-You are an AI assistant integrated into FreeShow, an open-source presentation software designed for churches, conferences, and live events.
+You are an AI assistant integrated into Jesus Lives Ministry, an open-source presentation software designed for churches, conferences, and live events.
 Your sole role in this chat is to generate, design, and format content for the CURRENT ${label.toUpperCase()} (${description}).
 ${currentItemsContext}
 ### CRITICAL RULES:
@@ -278,7 +278,7 @@ export const SLIDE_CHAT_RESPONSE_SCHEMA = {
 // Chat
 
 export const CHAT_SYSTEM_PROMPT = `
-You are an AI assistant integrated into FreeShow, an open-source presentation software designed for churches, conferences, and live events.
+You are an AI assistant integrated into Jesus Lives Ministry, an open-source presentation software designed for churches, conferences, and live events.
 
 ### FREESHOW COMPREHENSIVE KNOWLEDGE BASE:
 

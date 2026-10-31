@@ -1,3 +1,4 @@
+import { presentationIntent } from "../../ai/live/presentationIntent"
 import { get } from "svelte/store"
 import type { OutSlide } from "../../../types/Show"
 import { clearAudio } from "../../audio/audioFading"
@@ -13,6 +14,8 @@ import { getActiveTimelinePlayback } from "../timeline/TimelinePlayback"
 export function clearAll(button = false) {
     if (get(outLocked)) return
     if (!button && (get(activePopup) || (get(selected).id && get(selected).id !== "scripture") || (get(activePage) === "edit" && get(activeEdit).items.length) || get(activeStage).items.length || get(contextActive) || get(topContextActive))) return
+
+    presentationIntent({ type: "clear-all", outputIds: [], origin: "manual" })
 
     // reset slide cache on Escape
     outputSlideCache.set({})

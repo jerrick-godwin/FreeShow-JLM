@@ -28,26 +28,25 @@
 }
 
 :root {
-    --primary: #242832;
-    --primary-lighter: #2f3542;
-    --primary-darker: #191923;
-    --primary-darkest: #12121c;
-    --text: #f0f0ff;
-    --textInvert: #131313;
-    --secondary: #f0008c;
-    --secondary-opacity: rgba(240, 0, 140, 0.5);
-    --secondary-text: #f0f0ff;
-    --transparent: #232530;
-
-    --accent: #90caf9;
+    --primary: #0E3B5E;
+    --primary-lighter: #214F6C;
+    --primary-darker: #0C2D45;
+    --primary-darkest: #081F30;
+    --text: #FFFFFF;
+    --textInvert: #081F30;
+    --secondary-text: #081F30;
+    --secondary: #FFC805;
+    --secondary-opacity: rgba(255, 200, 5, 0.5);
+    --hover: rgba(184, 147, 58, 0.12);
+    --focus: rgba(255, 200, 5, 0.18);
+    --transparent: #0C2D45;
+    --accent: #B8933A;
 
     --connected: #27a827;
     --disconnected: #a82727;
 
     --red: rgb(255 0 0 / 0.25);
 
-    --hover: rgb(255 255 255 / 0.05);
-    --focus: rgb(255 255 255 / 0.1);
 
     /* https://css-tricks.com/snippets/css/system-font-stack/ */
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;

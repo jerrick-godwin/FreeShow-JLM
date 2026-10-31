@@ -6,6 +6,7 @@
     import Title from "../../input/Title.svelte"
     import MaterialDropdown from "../../inputs/MaterialDropdown.svelte"
     import MaterialPopupButton from "../../inputs/MaterialPopupButton.svelte"
+    import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
 
     function updateSpecial(value: any, key: string, allowEmpty = false) {
@@ -38,6 +39,8 @@
         return strings.join(`<span style="opacity: 0.4;"> | </span>`)
     }
 </script>
+
+<MaterialTextInput id="settings-branch-name" label="Branch name" placeholder="e.g. Colombo" value={$special.branchName || ""} on:input={(e) => updateSpecial(e.detail.slice(0, 80), "branchName", true)} />
 
 <MaterialDropdown label="settings.language" value={$language} options={getLanguageList()} on:change={(e) => setLanguage(e.detail)} flags />
 <MaterialToggleSwitch label="settings.use24hClock" checked={$timeFormat === "24"} on:change={(e) => timeFormat.set(e.detail ? "24" : "12")} />

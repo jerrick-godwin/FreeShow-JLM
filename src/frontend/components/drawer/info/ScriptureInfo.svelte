@@ -1,8 +1,9 @@
 <script lang="ts">
+    import { contentBackground } from "../../../../shared/contentLayouts"
     import type { MediaStyle } from "../../../../types/Main"
     import type { BibleContent } from "../../../../types/Scripture"
     import type { Item } from "../../../../types/Show"
-    import { activeEdit, activePage, activeScripture, activeStyle, drawerTabsData, media, outputs, scriptureSettings, settingsTab, styles, templates } from "../../../stores"
+    import { activeEdit, activePage, activeScripture, activeStyle, drawerTabsData, media, outputs, scriptureSettings, scriptures, settingsTab, styles, templates } from "../../../stores"
     import { setDefaultScriptureTemplates } from "../../../utils/createData"
     import { confirmCustom } from "../../../utils/popup"
     import { mediaExtensions } from "../../../values/extensions"
@@ -47,12 +48,12 @@
     // background
     $: templateId = styleScriptureTemplate || $scriptureSettings.template || "scripture" // $styles[styleId]?.templateScripture || ""
     $: template = $templates[templateId] || {}
-    $: templateBackground = template.settings?.backgroundPath
+    $: templateBackground = outputStyle?.bibleBackground?.image ?? template.settings?.backgroundPath
 
     // auto change template based on number of bibles (if default)
     // if collection, but only one of the Bibles load, biblesContent will be length 1 & not change the template, which is fine, but maybe confusing
     $: if (activeScriptureId || templateId || biblesContent.length) setTimeout(checkTemplate, 100)
-    $: isDefault = typeof templateId === "string" ? templateId.includes("scripture") && !templateId.includes("LT") : false
+    $: isDefault = typeof templateId === "string" ? /^scripture(?:_[234])?$/.test(templateId) && !!template.isDefault : false
     function checkTemplate() {
         if (!isDefault || !biblesContent.length) return
 
@@ -150,7 +151,7 @@
 
     $: styleId = getFirstActiveOutput($outputs)?.style || ""
     $: outputStyle = $styles[styleId]
-    $: background = $templates[templateId]?.settings?.backgroundColor || outputStyle?.background || "#000000"
+    $: background = outputStyle?.bibleBackground?.color || $templates[templateId]?.settings?.backgroundColor || contentBackground(outputStyle || { name: "" }, true).color || "#000000"
 
     $: attributionString = getMergedAttribution(biblesContent)
 
@@ -158,12 +159,13 @@
     let referenceMenuOpened = false
 
     $: onlyOneNormalOutput = getAllNormalOutputs().length === 1
-    $: styleScriptureTemplate = onlyOneNormalOutput ? $styles[styleId]?.templateScripture || "" : ""
+    $: translationCount = $scriptures[activeScriptureId]?.collection?.versions?.length || biblesContent.length || 1
+    $: styleScriptureTemplate = onlyOneNormalOutput ? $styles[styleId]?.[`templateScripture${translationCount > 1 ? `_${translationCount}` : ""}`] || $styles[styleId]?.templateScripture || "" : ""
 
     // auto convert
     $: if (useOldSystem && usingDefault && (!styleScriptureTemplate || styleScriptureTemplate.includes("scripture"))) convertToNew()
     $: useOldSystem = useOldScriptureSystem(templateId, $templates) && !styleScriptureTemplate
-    $: usingDefault = typeof templateId === "string" ? templateId.includes("scripture") : false
+    $: usingDefault = typeof templateId === "string" ? /^scripture(?:_[234])?$/.test(templateId) : false
     async function convertToNew() {
         if (!usingDefault) {
             if (!(await confirmCustom("This will apply the default template, and convert that to the new format. Your current template will not change.<br>You can use it as an example to adapt your existing templates. Continue?"))) return

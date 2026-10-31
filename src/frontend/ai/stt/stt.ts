@@ -6,7 +6,7 @@ import { ai } from "../../stores"
 export const audioLevelStore = writable<number>(0.0)
 
 export function resolveSttEngine(): string {
-    return get(ai)?.stt?.engine || "nemotron"
+    return get(ai)?.stt?.engine || "whisper"
 }
 
 type AudioLevelCallback = (level: number) => void
@@ -24,17 +24,16 @@ export class SpeechToText {
 
     static async enable() {
         const operationId = ++this.sessionToken
+        sendMain(Main.AI_LISTEN_STOP)
 
         const captured = await this.restartCapture(operationId)
         if (operationId !== this.sessionToken) {
-            this.stopCapture()
             return { ok: false, aborted: true }
         }
         if (!captured.ok) return captured
 
         const started = await this.restartEngine(operationId)
         if (operationId !== this.sessionToken) {
-            this.stopCapture()
             return { ok: false, aborted: true }
         }
 
@@ -55,6 +54,11 @@ export class SpeechToText {
 
         if (token !== this.sessionToken) return { ok: false, aborted: true }
         if (!result?.started) return { ok: false, error: result?.error }
+        if (result.sessionId) {
+            const { Transcript } = await import("./transcript")
+            if (token !== this.sessionToken) return { ok: false, aborted: true }
+            Transcript.begin(result.sessionId)
+        }
 
         return { ok: true }
     }
@@ -88,7 +92,6 @@ export class SpeechToText {
         const ac = await this.captureAudioContext(stream, token)
 
         if (token !== this.sessionToken) {
-            this.stopCapture()
             return { ok: false, aborted: true }
         }
 
@@ -98,7 +101,10 @@ export class SpeechToText {
     }
 
     static disable() {
-        this.sessionToken++
+        const token = ++this.sessionToken
+        import("./transcript").then(({ Transcript }) => {
+            if (token === this.sessionToken) Transcript.stop()
+        })
         sendMain(Main.AI_LISTEN_STOP)
         this.stopCapture()
     }
@@ -184,16 +190,20 @@ export class SpeechToText {
             this.captureNode = captureNode
 
             captureNode.port.onmessage = (e) => {
-                sendMain(Main.AI_AUDIO_DATA, { buffer: e.data })
+                if (this.captureNode === captureNode && (!operationId || operationId === this.sessionToken)) sendMain(Main.AI_AUDIO_DATA, { buffer: e.data })
             }
 
+            for (const track of this.stream?.getAudioTracks() || [])
+                track.onended = () => {
+                    if (this.stream === stream) this.disable()
+                }
             sourceNode.connect(captureNode)
             captureNode.connect(ac.destination)
 
             return ac
         } catch (err) {
             console.error("Failed to capture audio context:", err)
-            this.stopCapture()
+            if (!operationId || operationId === this.sessionToken) this.stopCapture()
             return null
         }
     }

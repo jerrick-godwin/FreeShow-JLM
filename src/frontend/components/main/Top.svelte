@@ -1,6 +1,6 @@
 <script lang="ts">
     import { slide } from "svelte/transition"
-    import { activeEdit, activePage, activeProfile, activeProject, activeShow, cloudUsers, dictionary, drawSettings, drawTool, os, outputDisplay, outputs, paintCache, profiles, saved, settingsTab, shows } from "../../stores"
+    import { activeEdit, activePage, activeProfile, activeProject, activeShow, cloudUsers, dictionary, drawSettings, drawTool, os, outputDisplay, outputs, paintCache, profiles, saved, special, settingsTab, shows } from "../../stores"
     import { getCloudUsers } from "../../utils/cloudSync"
     import { translateText } from "../../utils/language"
     import { DEFAULT_DISPLAY_NAME } from "../../utils/SocketHelper"
@@ -100,12 +100,11 @@
         {#if !$saved && $os.platform !== "win32"}
             <div class="unsaved" />
         {/if}
-        <!-- logo -->
-        <h1 style="align-self: center;width: 100%;padding: 0px 10px;text-align: center;font-size: 1.8em;">FreeShow</h1>
-        <!-- <div class="logo">
-            <img style="height: 35px;" src="./import-logos/freeshow.webp" alt="FreeShow-logo" draggable={false} />
-            <h1 style="color: var(--text);font-size: 1.7em;">FreeShow</h1>
-        </div> -->
+        <div class="ministry-brand" data-testid="ministry-brand">
+            <img src="./branding/ministry-logo.png" alt="Jesus Lives ministry logo" draggable={false} />
+            <h1>Jesus Lives Evangelical International Ministry</h1>
+            <p title={$special.branchName || ""}>{$special.branchName?.trim() ? `${$special.branchName.trim()} Branch` : "Branch not set"}</p>
+        </div>
     </span>
     <span>
         <TopButton id="show" />
@@ -164,8 +163,10 @@
         display: flex;
         justify-content: space-between;
         z-index: 30;
-        min-height: 40px;
-        height: 40px;
+        min-height: 76px;
+        height: 76px;
+        flex-shrink: 0;
+        align-items: center;
 
         box-shadow: 0 0 4px rgb(0 0 0 / 0.4);
 
@@ -220,10 +221,40 @@
         gap: 10px;
     } */
 
-    @media screen and (max-width: 580px) {
-        .top span:first-child {
-            display: none;
-        }
+    .ministry-brand {
+        width: 100%;
+        min-width: 0;
+        padding: 3px 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-align: center;
+    }
+    .ministry-brand img {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+    .ministry-brand h1 {
+        color: var(--text);
+        font-size: 10px;
+        line-height: 1.15;
+        font-weight: 650;
+        margin: 0;
+        max-width: 260px;
+        white-space: normal;
+    }
+    .ministry-brand p {
+        color: var(--secondary);
+        font-size: 10px;
+        line-height: 1.2;
+        margin: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .click_again {

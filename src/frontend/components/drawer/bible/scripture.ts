@@ -782,7 +782,7 @@ export async function getScriptureSlidesNew(data: any, onlyOne = false, disableR
     const selectedChapters = data.selectedChapters as number[]
     const selectedVerses = data.selectedVerses as (number | string)[][]
     // const biblesContent = (data.biblesContent || []).filter(Boolean) as BibleContent[]
-    const biblesContent = (await getActiveScripturesContent(selectedVerses)) || []
+    const biblesContent: BibleContent[] = data.useProvidedContent ? data.biblesContent || [] : (await getActiveScripturesContent(selectedVerses)) || []
     if (!biblesContent?.length || !biblesContent[0]) return { slides: [], groupNames: [], attributions: [], slideDynamicValues: [] }
 
     const totalVerses = selectedVerses.reduce((sum, chapterVerses) => sum + (chapterVerses?.length || 0), 0)
@@ -1967,7 +1967,10 @@ function getScriptureTemplateId() {
     if (!onlyOneNormalOutput) return scriptureTemplate
 
     const styleId = getFirstActiveOutput()?.style || ""
-    const styleScriptureTemplate = onlyOneNormalOutput ? get(styles)[styleId]?.templateScripture : ""
+    const activeBibleId = get(drawerTabsData).scripture?.activeSubTab || ""
+    const count = get(scriptures)[activeBibleId]?.collection?.versions?.length || 1
+    const outputStyle = get(styles)[styleId]
+    const styleScriptureTemplate = outputStyle?.[`templateScripture${count > 1 ? `_${count}` : ""}`] || outputStyle?.templateScripture
     return styleScriptureTemplate || scriptureTemplate
 }
 

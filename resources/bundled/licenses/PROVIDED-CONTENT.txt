@@ -1,0 +1,14 @@
+Church songbook and local Bible provenance
+
+The 935 native presentation records were supplied by the user in 2026-10-18_00-43.zip.
+The Sinhala and Tamil Bible records were taken from the user's existing FreeShow library,
+using the complete 66-book versions named in manifest.json. Original text and embedded
+metadata are preserved. No new public-domain or open-license status is asserted for
+these user-provided works.
+
+The offline English Bible is the World English Bible from eBible.org. See the included
+world-english-bible.html notice and the source URL in manifest.json. Conversion retains
+the numbered text of the 66-book Protestant canon; notes and headings are excluded.
+
+The multilingual Whisper model follows the upstream MIT license included here.
+The Tesseract OCR language data follows the included Apache-2.0 license.

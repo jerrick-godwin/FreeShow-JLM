@@ -1,9 +1,11 @@
 <script lang="ts">
-    import JSONBible from "json-bible"
-    import { ApiBible } from "json-bible/lib/api"
+    import type JSONBible from "json-bible"
+    import type { ApiBible } from "json-bible/lib/api"
     import type { Verse } from "json-bible/lib/Bible"
     import type { VerseReference } from "json-bible/lib/reference"
-    import { onMount } from "svelte"
+    import { onDestroy, onMount } from "svelte"
+    import { searchLocalBible } from "./liveSearch"
+    import type { Bible } from "../../../../types/Bible"
     import { defaultBibleBookNames } from "../../../converters/bebliaBible"
     import { activeEdit, activeScripture, activeTriggerFunction, customScriptureBooks, notFound, openScripture, outLocked, outputs, resized, scriptureHistory, scriptureMode, scriptures, scriptureSettings, selected } from "../../../stores"
     import { escapeRegExp, wait } from "../../../utils/common"
@@ -19,7 +21,6 @@
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialCheckbox from "../../inputs/MaterialCheckbox.svelte"
     import MaterialNumberInput from "../../inputs/MaterialNumberInput.svelte"
-    import TextInput from "../../inputs/TextInput.svelte"
     import Loader from "../../main/Loader.svelte"
     import Center from "../../system/Center.svelte"
     import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, sanitizeVerseText, scriptureRangeSelect, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
@@ -59,7 +60,7 @@
         if (!id || data[id]) return
         try {
             const jsonBible = await loadJsonBible(id)
-            if (!jsonBible) return
+            if (!jsonBible || id !== previewBibleId) return
 
             data[id] = { bibleData: jsonBible }
             data = data // trigger reactivity
@@ -245,7 +246,7 @@
     async function loadScripture(id: string) {
         apiError = false
 
-        if (!id) return
+        if (!id || id !== previewBibleId) return
         if (data[id]) {
             openBook()
             return
@@ -323,11 +324,12 @@
 
     async function openBook(bookNumber?: number | string, chapterNumbers?: (number | string)[], verseNumbers?: (number | string)[][], navId?: number): Promise<boolean> {
         const currentNavId = navId ?? ++navigationId
-
-        const targetBookNumber = bookNumber ?? activeReference.book ?? 1
+        const bibleId = previewBibleId
 
         const currentData = data[previewBibleId]?.bibleData
         if (!currentData) return false
+        const requestedBook = bookNumber ?? activeReference.book ?? currentData.data.books[0]?.number ?? 1
+        const targetBookNumber = currentData.data.books.find((book) => book.number.toString() === requestedBook.toString())?.number || currentData.data.books[0]?.number || requestedBook
 
         // remove current data so loading shows again
         delete data[previewBibleId].bookData
@@ -342,7 +344,9 @@
                 pendingBookId = bookId
                 pendingBookPromise = currentData.getBook(targetBookNumber)
             }
-            data[previewBibleId].bookData = await pendingBookPromise
+            const loadedBook = await pendingBookPromise
+            if (currentNavId !== navigationId || bibleId !== previewBibleId) return false
+            data[bibleId].bookData = loadedBook
         } catch (err) {
             console.error(err)
             return false
@@ -360,9 +364,13 @@
 
     async function openChapter(chapterNumbers?: (number | string)[], verseNumbers?: (number | string)[][], navId?: number): Promise<boolean> {
         const currentNavId = navId ?? ++navigationId
-        const targetChapterNumbers = chapterNumbers?.length ? chapterNumbers : activeReference.chapters?.length ? activeReference.chapters : [1]
+        const bibleId = previewBibleId
         const currentData = data[previewBibleId]?.bookData
         if (!currentData) return false
+        const requestedChapters = chapterNumbers?.length ? chapterNumbers : activeReference.chapters
+        const availableChapters = currentData.data.chapters
+        const targetChapterNumbers = requestedChapters.filter((number) => availableChapters.some((chapter) => chapter.number.toString() === number.toString()))
+        if (!targetChapterNumbers.length) targetChapterNumbers.push(availableChapters[0]?.number || 1)
 
         // remove current data so loading shows again
         delete data[previewBibleId].chapterData
@@ -379,7 +387,9 @@
                 pendingChapterId = chapterId
                 pendingChapterPromise = currentData.getChapter(chapterNumber)
             }
-            data[previewBibleId].chapterData = await pendingChapterPromise
+            const loadedChapter = await pendingChapterPromise
+            if (currentNavId !== navigationId || bibleId !== previewBibleId) return false
+            data[bibleId].chapterData = loadedChapter
         } catch (err) {
             console.error(err)
             return false
@@ -397,11 +407,14 @@
 
     let playWhenLoaded = false
     async function openVerse(verseNumbers?: (number | string)[][]) {
-        verseNumbers = verseNumbers?.length ? verseNumbers : activeReference.verses.length ? activeReference.verses : [[1]]
-        activeReference.verses = verseNumbers
-
         const currentData = data[previewBibleId]?.chapterData
         if (!currentData) return
+        verseNumbers = verseNumbers?.length ? verseNumbers : activeReference.verses.length ? activeReference.verses : [[currentData.data.verses[0]?.number || 1]]
+        if (activeReference.chapters.length <= 1) {
+            const valid = (verseNumbers[0] || []).filter((number) => currentData.data.verses.some((verse) => verse.number === getVerseIdParts(number).id))
+            verseNumbers = [valid.length ? valid : [currentData.data.verses[0]?.number || 1]]
+        }
+        activeReference.verses = verseNumbers
 
         // load new data
         try {
@@ -590,89 +603,58 @@
 
     /// SEARCH ///
 
-    $: if (searchValue.length) referenceSearch()
-
-    let selectAllTimeout: NodeJS.Timeout | null = null
-    let freezeTimeout: NodeJS.Timeout | null = null
-    let freezeInput: string | null = null
-
+    let searchTimer: ReturnType<typeof setTimeout> | undefined
+    let previousSearch: { query: string; bible?: BibleReturn; id: string; names: string } | undefined
     let currentSearchId = 0
-    async function referenceSearch() {
-        const searchId = ++currentSearchId
-
-        if (selectAllTimeout) clearTimeout(selectAllTimeout)
-
-        // if search value ends with any number, unfreeze
-        if (/\d$/.test(searchValue) || searchValue.length < (freezeInput?.length || 0)) {
-            if (freezeTimeout) clearTimeout(freezeTimeout)
-            freezeInput = null
-        } else if (freezeInput) {
-            searchValue = freezeInput
-            return
-        }
-
-        const multiReference = await parseMultiChapterReference(searchValue)
-
-        if (searchId !== currentSearchId) return
-
-        if (multiReference) {
-            // normalize the search box so it reflects the exact selection the user will get
-            searchValue = multiReference.referenceLabel
-            await openBook(multiReference.bookNumber, multiReference.chapters, multiReference.verses)
-            return
-        }
-
-        const result = currentBibleData?.bibleData?.bookSearch(searchValue)
-        if (!result) return
-
-        // json-bible returns empty verses when chapter is not loaded, this fixes search issues
-        if (result.chapter && !result.verses?.length) {
-            const verseMatch = searchValue.match(/[:.,]\s*(\d+)(?:-(\d+))?[^a-zA-Z]*$/)
-            if (verseMatch) {
-                const start = parseInt(verseMatch[1])
-                const end = verseMatch[2] ? parseInt(verseMatch[2]) : start
-                if (start > 0 && start <= 150) {
-                    result.verses = Array.from({ length: end - start + 1 }, (_, i) => start + i)
+    let searchLoading = false
+    let searchError = ""
+    let searchedBooks: { number: number; name: string }[] = []
+    let referenceResults = false
+    $: scheduleSearch(searchValue, currentBibleData?.bibleData, previewBibleId, $customScriptureBooks[previewBibleId])
+    function scheduleSearch(query: string, bible: BibleReturn | undefined, bibleId: string, customNames?: string[]) {
+        const names = JSON.stringify(customNames || [])
+        if (previousSearch?.query === query && previousSearch.bible === bible && previousSearch.id === bibleId && previousSearch.names === names) return
+        if (previousSearch && previousSearch.query !== query && previousSearch.bible === bible) navigationId++
+        previousSearch = { query, bible, id: bibleId, names }
+        clearTimeout(searchTimer)
+        const requestId = ++currentSearchId
+        searchError = ""
+        searchedBooks = []
+        contentSearchResults = null
+        searchLoading = !!query.trim() && !!bible
+        if (!query.trim() || !bible) return
+        searchTimer = setTimeout(async () => {
+            try {
+                if (!isApi) {
+                    const results = searchLocalBible(bible.data as Bible, query, customNames)
+                    if (requestId !== currentSearchId || bibleId !== previewBibleId) return
+                    referenceResults = results.kind === "reference"
+                    searchedBooks = results.books
+                    contentSearchResults = results.verses as VerseReference[]
+                    if (results.kind === "invalid") searchError = "No matching Bible reference. Check the book, chapter, and verse."
+                } else {
+                    // Keep the existing remote reference/range parser, without altering the user's input.
+                    const parsed = await parseMultiChapterReference(query)
+                    if (requestId !== currentSearchId) return
+                    if (parsed) await openBook(parsed.bookNumber, parsed.chapters, parsed.verses)
+                    else {
+                        const ref = bible.bookSearch(query)
+                        if (ref?.book) await openBook(ref.book, ref.chapter ? [ref.chapter] : undefined, ref.verses?.length ? [ref.verses] : undefined)
+                        else searchError = "Verse-text search is unavailable for this online Bible. Import a local Bible to search its words."
+                    }
                 }
+            } catch (error) {
+                if (requestId === currentSearchId) searchError = "Unable to search this Bible. Please try again."
+                console.error(error)
+            } finally {
+                if (requestId === currentSearchId) searchLoading = false
             }
-        }
-
-        const autocompleteChanged = result.autocompleted && result.autocompleted !== searchValue
-        if (result.autocompleted) searchValue = result.autocompleted
-
-        const bookChanged = result.book && result.book.toString() !== activeReference.book?.toString()
-        const chapterChanged = result.chapter && (!activeReference.chapters.length || result.chapter.toString() !== activeReference.chapters[0]?.toString())
-
-        let newVerses: (number | string)[][] | undefined = undefined
-        if (result.verses?.length) {
-            newVerses = !bookChanged && !chapterChanged && splittedVerses ? [splittedVerses.filter((a) => result.verses.includes(a.number)).map((a) => a.id)] : [result.verses]
-        }
-
-        let success = true
-        if (bookChanged) {
-            // prevent inputs right after auto complete
-            if (!result.chapter) {
-                freezeInput = searchValue
-                freezeTimeout = setTimeout(() => (freezeInput = null), 1500)
-            }
-            success = await openBook(result.book, result.chapter ? [result.chapter] : undefined, newVerses)
-        } else if (autocompleteChanged && !result.chapter) {
-            // prevent inputs right after auto complete to already opened book
-            freezeInput = searchValue
-            freezeTimeout = setTimeout(() => (freezeInput = null), 1500)
-        } else if (chapterChanged) {
-            success = await openChapter([result.chapter], newVerses)
-        } else if (result.chapter) {
-            // Same book and chapter
-            if (newVerses) openVerse(newVerses)
-        }
-
-        if (searchId !== currentSearchId || !success) return
-
-        if (result.chapter && !newVerses) {
-            selectAllTimeout = setTimeout(selectAllVerses)
-        }
+        }, 150)
     }
+    onDestroy(() => {
+        clearTimeout(searchTimer)
+        currentSearchId++
+    })
 
     type MultiReference = {
         bookNumber: number
@@ -811,42 +793,17 @@
         return `${bookName} ${firstLabel}${suffix}`.trim()
     }
 
+    function focusBibleSearch() {
+        document.querySelector<HTMLInputElement>(".drawer_search")?.focus()
+    }
+
     let contentSearchFieldActive = false
-    let contentSearchValue = ""
     let contentSearchResults: VerseReference[] | null = null
 
-    // auto search when char length is 5 or longer
-    function searchValueChanged(e: any) {
-        contentSearchValue = e.target?.value || ""
-        if (contentSearchValue.length < 5) {
-            contentSearchResults = null
-            return
-        }
-
-        searchInBible()
-    }
-
-    async function searchInBible() {
-        if (contentSearchValue.length < 3) {
-            contentSearchResults = null
-            return
-        }
-
-        try {
-            const result = await currentBibleData?.bibleData?.textSearch(contentSearchValue)
-            if (!result) return
-
-            contentSearchResults = result
-        } catch (err) {
-            console.error(err)
-        }
-    }
-
-    // reset if another reference is loaded
-    $: if (activeReference) resetContentSearch()
     function resetContentSearch() {
-        contentSearchValue = ""
         contentSearchResults = null
+        searchedBooks = []
+        searchError = ""
         contentSearchFieldActive = false
     }
 
@@ -857,7 +814,7 @@
         if (!contentSearchResults) resetContentSearch()
     }
 
-    function keydown(e: KeyboardEvent) {
+    async function keydown(e: KeyboardEvent) {
         if (e.key === "Escape") {
             resetContentSearch()
             return
@@ -866,6 +823,22 @@
         if (e.key === "Enter") {
             // Enter in search to add to project or play
             if (e.target?.closest(".search")) {
+                if (searchLoading || searchError) return
+                const match = contentSearchResults?.[0]
+                if (searchedBooks.length) {
+                    const book = searchedBooks[0]
+                    resetContentSearch()
+                    await openBook(book.number)
+                    return
+                }
+                if (contentSearchResults !== null && !match) return
+                if (match) {
+                    const matches = referenceResults ? contentSearchResults!.filter((result) => result.book === match.book) : [match]
+                    const chapters = [...new Set(matches.map((result) => result.chapter))]
+                    const numbers = chapters.map((chapter) => matches.filter((result) => result.chapter === chapter).map((result) => result.verse.number))
+                    resetContentSearch()
+                    if (!(await openBook(match.book, chapters, numbers))) return
+                }
                 const enterSwapped = $scriptureSettings.enterSwapped
                 const ctrlKey = e.ctrlKey || e.metaKey
                 if (enterSwapped ? !ctrlKey : ctrlKey) {
@@ -883,19 +856,6 @@
             // Ctrl+Enter to play
             if (e.target?.closest?.(".edit")) return
             if (e.ctrlKey || e.metaKey) playScripture()
-            return
-        }
-
-        // assign chapter:verse divider when pressing arrow right
-        if (e.key === "ArrowRight" && document.activeElement?.classList?.contains("search")) {
-            if (searchValue.includes(" ") && searchValue.length > 3 && /\d/.test(searchValue) && !searchValue.includes(":")) {
-                searchValue += ":"
-
-                // move caret
-                let searchInput: any = document.activeElement
-                setTimeout(() => (searchInput.selectionStart = searchInput.selectionEnd = 100))
-            }
-
             return
         }
 
@@ -923,7 +883,7 @@
         // toggle Bible content search
         if (ctrlKey === "b") {
             if (contentSearchFieldActive) resetContentSearch()
-            else contentSearchFieldActive = true
+            else document.querySelector<HTMLInputElement>(".drawer_search")?.focus()
             return
         }
 
@@ -1051,16 +1011,36 @@
             <Center faded>
                 <T id="error.bible{apiError ? '_api' : ''}" />
             </Center>
+        {:else if searchLoading}
+            <Center><Loader /></Center>
+        {:else if searchError}
+            <Center faded>{searchError}</Center>
+        {:else if searchedBooks.length}
+            <div class="verses verseList">
+                {#each searchedBooks as book}
+                    <MaterialButton
+                        on:click={() => {
+                            resetContentSearch()
+                            openBook(book.number)
+                        }}>{book.name}</MaterialButton
+                    >
+                {/each}
+            </div>
         {:else if contentSearchResults !== null}
             {#if contentSearchResults.length}
                 <div class="verses verseList">
-                    {#each contentSearchResults as match}
+                    {#if contentSearchResults.length > 100}<p>Showing the first 100 verses. Enter selects the complete reference.</p>{/if}
+                    {#each contentSearchResults.slice(0, 100) as match}
                         <span
                             class="verse context #scripture_search_result"
                             class:showAllText={$resized.rightPanelDrawer <= 5}
                             data-book={match.book}
                             data-chapter={match.chapter}
                             data-verse={match.verse.number}
+                            on:click={() => {
+                                resetContentSearch()
+                                openBook(match.book, [match.chapter], [[match.verse.number]])
+                            }}
                             on:dblclick={() => {
                                 openBook(match.book, [match.chapter], [[match.verse.number]])
                                 playWhenLoaded = true
@@ -1262,11 +1242,7 @@
     </FloatingInputs>
 {/if}
 
-{#if contentSearchFieldActive}
-    <FloatingInputs>
-        <TextInput placeholder={translateText("scripture.search")} value={contentSearchValue} on:input={searchValueChanged} on:change={searchInBible} style="width: 300px;border-radius: 20px;" autofocus />
-    </FloatingInputs>
-{:else if $scriptureMode !== "grid" || $resized.rightPanelDrawer > 5}
+{#if $scriptureMode !== "grid" || $resized.rightPanelDrawer > 5}
     <FloatingInputs>
         {#if isActiveInOutput}
             <MaterialButton disabled={activeReference.book?.toString() === "1" && !!activeReference.chapters?.find((a) => a.toString() === "1") && !!activeReference.verses[0]?.find((a) => a.toString() === "1")} title="{translateText('preview._previous_slide')} [Ctrl+Arrow Left]" on:click={() => _moveSelection(true)}>
@@ -1296,7 +1272,7 @@
         {/if}
 
         <!-- content search is not supported for YouVersion Bibles (at the moment)-->
-        <MaterialButton title="scripture.search [Ctrl+B]" disabled={typeof $scriptures[activeScriptureId]?.id === "string" ? $scriptures[activeScriptureId].id.includes("YOUVERSION") : false} on:click={() => (contentSearchFieldActive = true)}>
+        <MaterialButton title="scripture.search [Ctrl+B]" disabled={typeof $scriptures[activeScriptureId]?.id === "string" ? $scriptures[activeScriptureId].id.includes("YOUVERSION") : false} on:click={focusBibleSearch}>
             <Icon size={1.1} id="search" white />
         </MaterialButton>
     </FloatingInputs>

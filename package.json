@@ -1,10 +1,10 @@
 {
     "name": "freeshow",
-    "version": "1.6.8-beta.2",
+    "version": "1.0.0",
     "private": true,
     "main": "build/electron/index.js",
-    "description": "Show song lyrics and more for free!",
-    "repository": "git@github.com:ChurchApps/FreeShow.git",
+    "description": "Ministry song, Scripture, caption and live presentation software",
+    "repository": "git+https://github.com/jerrick-godwin/FreeShow-JLM.git",
     "author": "ChurchApps <support@livecs.org>",
     "license": "GPL-3.0",
     "engines": {
@@ -38,7 +38,7 @@
         "build:electron:prod": "cross-env NODE_ENV=production tsc --p config/typescript/tsconfig.electron.prod.json",
         "---RELEASE---": "",
         "prerelease": "npm run build",
-        "release": "electron-builder --config config/building/electron-builder.yaml --publish always",
+        "release": "electron-builder --config config/building/electron-builder.yaml --publish never",
         "postrelease": "node scripts/cleanBuilds.js",
         "prerelease:local": "npm run build",
         "release:local": "electron-builder --config config/building/electron-builder.local.yaml --publish never",
@@ -55,7 +55,9 @@
         "lint:electron": "eslint -c config/linting/eslint.electron.json --ext .js,.ts src/electron --fix",
         "lint:frontend": "eslint -c config/linting/eslint.frontend.json --ext .js,.ts src/frontend --fix",
         "lint:svelte": "eslint -c config/linting/eslint.svelte.js --ext .svelte src/frontend --fix",
-        "lint:styles": "npx stylelint 'src/frontend/**/*.{css,scss,svelte}' --config config/linting/.stylelintrc.json"
+        "lint:styles": "npx stylelint 'src/frontend/**/*.{css,scss,svelte}' --config config/linting/.stylelintrc.json",
+        "test:document-imports": "npm run build:electron:dev && node scripts/testDocumentImports.js",
+        "prepare:bundled": "node scripts/prepareBundledAssets.js"
     },
     "devDependencies": {
         "@electron/notarize": "^2.5.0",
@@ -125,6 +127,7 @@
     "dependencies": {
         "@discordjs/opus": "^0.10.0",
         "@googleapis/drive": "^8.16.0",
+        "@napi-rs/canvas": "^0.1.100",
         "@sentry/electron": "^7.3.0",
         "axios": "^1.12.2",
         "better-sqlite3": "^13.0.3",
@@ -141,6 +144,7 @@
         "jzz": "^1.9.5",
         "libltc-wrapper": "github:bitfocus/libltc-wrapper#9637e39",
         "macadam": "github:vassbo/macadam#7274be8",
+        "mammoth": "^1.13.0",
         "mdb-reader": "^1.2.1",
         "mp4box": "^0.6.5",
         "music-metadata": "^7.14.0",
@@ -152,6 +156,7 @@
         "sharp": "^0.35.4",
         "slideshow": "github:vassbo/slideshow#58f8a1e",
         "socket.io": "^4.8.1",
+        "tesseract.js": "^7.0.0",
         "uid": "^2.0.2",
         "upath": "^2.0.1",
         "word-extractor": "^1.0.4",
@@ -162,5 +167,6 @@
     "optionalDependencies": {
         "libspotifyctl": "^0.3.4",
         "sherpa-onnx-node": "^2.0.1"
-    }
+    },
+    "productName": "Jesus Lives Ministry"
 }

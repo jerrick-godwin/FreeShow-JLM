@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte"
+    import { applyFeatureDefaults } from "../../../../shared/featureDefaults"
     import { Main } from "../../../../types/IPC/Main"
     import { requestMain, sendMain } from "../../../IPC/main"
-    import { activePopup, dataPath, dictionary, guideActive, language, popupData, timeFormat } from "../../../stores"
+    import { activePopup, ai, dataPath, dictionary, guideActive, language, popupData, special, timeFormat } from "../../../stores"
     import { createData } from "../../../utils/createData"
     import { getLanguageList, setLanguage, translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
@@ -12,6 +13,7 @@
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialDropdown from "../../inputs/MaterialDropdown.svelte"
     import MaterialFolderPicker from "../../inputs/MaterialFolderPicker.svelte"
+    import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
 
     onMount(() => {
@@ -24,6 +26,9 @@
     })
 
     function create() {
+        if (!$special.branchName?.trim()) return
+        special.update((value) => ({ ...value, branchName: value.branchName.trim() }))
+        ai.update(applyFeatureDefaults)
         requestMain(Main.GET_PATHS, undefined, (a) => (a ? createData(a) : null))
 
         sendMain(Main.REFRESH_SHOWS)
@@ -60,6 +65,8 @@
 
     <p style="margin-bottom: 10px;font-style: italic;font-size: 0.8em;opacity: 0.5;"><T id="setup.change_later" />:</p>
 
+    <MaterialTextInput id="setup-branch-name" label="Branch name" placeholder="e.g. Colombo" value={$special.branchName || ""} on:input={(e) => special.update((value) => ({ ...value, branchName: e.detail.slice(0, 80) }))} />
+
     <InputRow>
         <MaterialDropdown style="width: 50%;" label={languageLabel} value={$language} options={getLanguageList()} on:change={(e) => setLanguage(e.detail)} flags />
         <MaterialToggleSwitch style="width: 50%;" label="settings.use24hClock" checked={$timeFormat === "24"} on:change={(e) => timeFormat.set(e.detail ? "24" : "12")} />
@@ -67,7 +74,7 @@
 
     <MaterialFolderPicker PICK_ID="DATA_SHOWS" label={translateText("settings.data_location", $dictionary)} value={$dataPath} on:change={updateDataPath} openButton={false} />
 
-    <MaterialButton variant="outlined" class="start" style="font-size: 1.8em;padding: 15px;margin-top: 20px;" on:click={create} white>
+    <MaterialButton variant="outlined" class="start" disabled={!$special.branchName?.trim()} style="font-size: 1.8em;padding: 15px;margin-top: 20px;" on:click={create} white>
         <Icon id="check" size={2.5} />
         <T id="setup.get_started" />
     </MaterialButton>

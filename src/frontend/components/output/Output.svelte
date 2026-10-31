@@ -1,6 +1,8 @@
 <!-- Used in output window, and currently in draw! -->
 
 <script lang="ts">
+    import CaptionOutput from "./CaptionOutput.svelte"
+    import { contentBackground } from "../../../shared/contentLayouts"
     import { onDestroy } from "svelte"
     import { compositedOutputs } from "../drawer/live/streamLayer"
     import { mediaFill, mediaLayered } from "./layers/mediaLayers"
@@ -230,7 +232,7 @@
     }
     const setTemplateItems = () => (currentSlide!.items = setTemplateStyle(slide!, currentStyle, currentSlide!.items, outputId, currentSlide!.customDynamicValues))
     let styleTemplate: Template | null = null
-    const getStyleTemplateData = () => (styleTemplate = getStyleTemplate(slide!, currentStyle))
+    const getStyleTemplateData = () => (styleTemplate = getStyleTemplate(slide!, currentStyle, currentSlide?.customDynamicValues))
     $: templateBackground = styleTemplate?.settings?.backgroundPath || ""
 
     // lines
@@ -331,7 +333,11 @@
 
     // values
     // a composited layer is drawn under the captured page, so it goes transparent; a mirror never does
-    $: opaqueBackground = styleTemplate?.settings?.backgroundColor || currentSlide?.settings?.color || currentStyle?.background || slide?.settings?.backgroundColor || "black"
+    $: scriptureContent = slide?.id === "temp" || _show(slide?.id).get("reference")?.type === "scripture" || Object.keys(currentSlide?.customDynamicValues || {}).some((key) => key.startsWith("scripture"))
+    $: selectedBackground = contentBackground(currentStyle, scriptureContent)
+    $: contentColorOverride = (scriptureContent ? currentStyle.bibleBackground : currentStyle.songBackground)?.color
+    $: contentImageOverride = (scriptureContent ? currentStyle.bibleBackground : currentStyle.songBackground)?.image
+    $: opaqueBackground = contentColorOverride || styleTemplate?.settings?.backgroundColor || currentSlide?.settings?.color || selectedBackground.color || slide?.settings?.backgroundColor || "black"
     $: layerUnder = !mirror && !!($compositedOutputs[outputId] || $mediaLayered[outputId])
     $: backgroundColor = currentOutput?.transparent || layerUnder ? "transparent" : opaqueBackground
     // the backdrop switches unfaded, so it never covers the video
@@ -345,10 +351,10 @@
     // the capture worker fills around a media layer with this color
     $: if (!mirror && outputId && $mediaFill[outputId] !== opaqueBackground) mediaFill.update((a) => ({ ...a, [outputId]: opaqueBackground }))
     // background image
-    $: styleBackground = currentStyle?.clearStyleBackgroundOnText && (slide || background) ? "" : currentStyle?.backgroundImage || ""
+    $: styleBackground = currentStyle?.clearStyleBackgroundOnText && (slide || background) ? "" : selectedBackground.image || ""
     $: styleBackgroundData = { path: styleBackground, ...($media[styleBackground] || {}), loop: true }
     $: templateBackgroundData = { path: templateBackground, loop: true, ...($media[templateBackground] || {}) }
-    $: backgroundData = templateBackground ? templateBackgroundData : background
+    $: backgroundData = contentImageOverride !== undefined ? (contentImageOverride ? { path: contentImageOverride, loop: true, ...($media[contentImageOverride] || {}) } : background) : templateBackground ? templateBackgroundData : background
 
     // remove slide transition when replaced by "foreground" media (drawn below slide)
     const noTransition: Transition = { type: "none", duration: 0, easing: "" }
@@ -480,6 +486,7 @@
     {#if !mirror && !preview}
         <RepaintTick {outputId} />
     {/if}
+    {#if out.caption}<CaptionOutput cue={out.caption} />{/if}
 </Zoomed>
 
 <style>

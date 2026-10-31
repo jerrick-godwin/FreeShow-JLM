@@ -22,3 +22,6 @@ test-results/
 *.ipr
 *.iws
 .serena
+# Reproducible offline model payloads are prepared and verified before builds.
+/resources/bundled/models/
+/resources/bundled/ocr/

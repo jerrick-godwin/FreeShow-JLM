@@ -46,6 +46,7 @@ export interface Show {
         tags?: string[]
     }
     meta: {
+        aliases?: string
         number?: string
         title?: string
         artist?: string
@@ -621,6 +622,7 @@ export interface OutBackground {
 }
 
 export interface OutSlide {
+    followSessionId?: string
     id: ID
     layout?: ID
     index?: number

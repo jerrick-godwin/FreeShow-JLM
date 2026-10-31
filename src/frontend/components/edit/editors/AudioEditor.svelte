@@ -76,7 +76,7 @@
 
     .waveform-container :global(.wave-bar) {
         background-color: var(--secondary);
-        background: linear-gradient(0deg, rgb(240, 0, 140) 0%, rgb(169, 0, 240) 100%);
+        background: linear-gradient(0deg, #b59236 0%, #ffcb05 100%);
 
         width: 2%;
         min-height: 5px;

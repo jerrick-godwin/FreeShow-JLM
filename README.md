@@ -1,79 +1,88 @@
-<p align='center'>
- <a href='https://freeshow.app/'>
-  <img src='https://github.com/ChurchApps/FreeShow/assets/17619496/02ac9807-1f47-47fc-b895-b35f857c2b57' width=150 />
- </a>
+<p align="center">
+  <img src="public/branding/ministry-logo.png" width="130" alt="Jesus Lives ministry logo" />
 </p>
 
-<h1 align='center'>
-  FreeShow
-</h1>
+<h1 align="center">Jesus Lives Ministry</h1>
+<p align="center"><strong>Jesus Lives Evangelical International Ministry</strong></p>
+<p align="center">Songs, Scripture, subtitles, and live presentation assistance for your ministry branch.</p>
 
-<p align='center'>
-  FreeShow is a free software with a user-friendly interface that offers powerful features for creating and editing slideshows. 
-</p>
+## What is included
 
-<p align='center'>
-  <a href="https://github.com/ChurchApps/freeshow/releases"><img alt="Download" src="https://img.shields.io/github/downloads/ChurchApps/FreeShow/total?style=for-the-badge" /></a>
-  &nbsp;
-  <a href="https://github.com/ChurchApps/freeshow/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/licence-GPL-blue.svg?style=for-the-badge" /></a>
-  &nbsp;
-  <a href="https://github.com/ChurchApps/FreeShow/"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/ChurchApps/FreeShow?style=for-the-badge" /></a>
-</p>
-<br />
+- **Your church library, ready offline:** 930 songs and choruses, five saved Scripture presentations, and English, Sinhala, and Tamil Bibles.
+- **Independent layouts:** separate fonts, text positions, colours, and backgrounds for song lyrics and Bible verses.
+- **Live Bible search:** type a reference such as `Psalms 3:4`, a range, a book name, or words from a verse. Review results before projecting.
+- **Songbook and Bible imports:** PDF, Word, CSV, and supported app exports, with local OCR for scanned pages, correction previews, duplicate handling, cancellation, and undo.
+- **Local speech recognition:** a bundled multilingual Whisper model with automatic language detection. English, Sinhala, and Tamil OCR recognition data is also included.
+- **Live suggestions and subtitles:** recognize song titles, lyrics, Bible references, and verse text using the local library first.
+- **Confirm once, then follow:** accept a song or passage to follow its slides automatically. Manual navigation pauses following; Pause, Resume, Stop, and output locks remain available.
+- **Branch identity:** the ministry logo, full ministry name, and your branch name appear in the main window, using the logo's navy and gold palette.
 
-## Get Started Using FreeShow
+The new feature controls, suggestions, and captions are **enabled by default**. Microphone capture starts when you choose **Start listening**. Existing explicit preferences are preserved.
 
-[![](https://markdown-videos.vercel.app/youtube/9_1lUNcrU1w)](https://youtu.be/9_1lUNcrU1w)
+## First launch
 
-## Preview
+1. Enter your branch name, choose the interface language and clock format, and confirm the library location.
+2. Follow the seven-step walkthrough, or skip it and replay it later through Help.
+3. Open **Shows** for songs or **Scripture** for the trilingual Bible collection.
+4. Check your preview and presentation output before projecting.
+5. For live assistance, start listening and accept a suggestion to begin following.
 
-<div style="display: flex;gap: 10px;">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/0e5e832d-9bb8-4c64-98cc-04f0ce3f966e">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/c1d71b2f-d873-4125-9f04-339e234e55f9">
-</div>
-<div style="display: flex;gap: 10px;margin-top: 10px;">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/39c344fd-5c22-4019-9cae-c6307364d580">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/b1275bfc-e966-4813-962e-a7350ba6a84a">
-</div>
+Change the branch name later in **Settings → General**. Adjust song and Bible layouts in **Settings → Styles**, and recognition, caption, and following options in **Settings → Smart**.
 
-## Short description
+## Screenshots
 
-FreeShow is a free and open-source presentation program that makes it easy to show text on a big screen. It supports stage display, remote control, media, and many other advanced features. It is open-sourced meaning anyone can contribute.
+These screenshots show the current application with a temporary Colombo example profile.
 
-FreeShow exists because the creator found that other similar programs were either expensive or complex to use. He wanted to create a program that is easy to use and affordable for everyone, from small churches to large venues. FreeShow is now used by people all over the world.
+![Ministry dashboard and bundled songbook](docs/screenshots/04-ministry-dashboard.png)
 
-## Support Us
+![First-launch walkthrough](docs/screenshots/02-walkthrough.png)
 
-The only reason this program is free is because of the generous support from users. If you want to support us to keep this free, please head over to [ChurchApps](https://churchapps.org/partner) or [sponsor us on GitHub](https://github.com/sponsors/ChurchApps/). Thank you so much!
+[View all six current screenshots](docs/screenshots/README.md), including branch setup, Follow Live, Bible search, and independent layouts.
 
-## Join the Community
+## Offline use and installer status
 
-We have a great community for end-users on [Facebook](https://www.facebook.com/groups/freeshowapp). It's a good way to ask questions, get tips and follow new updates. Come join us!
+Download available packages from [GitHub Releases](https://github.com/jerrick-godwin/FreeShow-JLM/releases). See each release for platform validation and known limitations.
 
-## Report an issue or request a feature
+The installers are configured to include the church library, three Bibles, speech model, and English/Sinhala/Tamil OCR data. The offline payload is approximately **401 MiB before compression**; installed copies use local resources without a first-run download. Existing library records are preserved during setup and upgrades.
 
-If you notice a bug, or need a feature. Please create an [issue on GitHub](https://github.com/ChurchApps/freeshow/issues).
+An unsigned **Apple Silicon Mac** application has passed packaging, native speech-runtime, and offline first-launch checks. **Windows x64 and Intel Mac installer testing, signing, and notarization remain pending.** The manual [Ministry installers workflow](.github/workflows/build.yml) builds each supported target on its native platform and checks the packaged resources.
 
-## Give feedback
+Online song discovery requires an internet connection. Review sources and provide lyrics you have permission to use before adding them to the library. Optional alternative recognition and chat models are separate from the bundled default model.
 
-Feedback is welcome! Please [open a discussion here](https://github.com/orgs/ChurchApps/discussions/categories/freeshow) or send a mail to [dev@freeshow.app](mailto:dev@freeshow.app).
+Live following is experimental. Recognition during singing, accompaniment, congregation noise, and representative Sinhala/Tamil recordings still needs real-world validation. Uncertain recognition holds the current display; switching to a different song or passage requires confirmation.
 
-## Help translate
+## Run from source
 
-Head over to [FreeShow on Transifex](https://app.transifex.com/nettbiter/freeshow/) to request a language.
+Use **Node.js 22.12 or newer** and the native build tools required by Electron dependencies: Xcode Command Line Tools on macOS, or Visual Studio's Desktop development with C++ tools on Windows. Native dependencies may also require Python and platform-specific libraries.
 
-## Help the development
+```sh
+npm ci --include=optional
+npm run prepare:bundled
+npm start
+```
 
-You are welcome to contribute to the code!
+Dependency installation and initial asset preparation require internet access. Bundled assets are checked against their recorded sizes and SHA-256 checksums.
 
-1. Clone the code in this repo
-2. Install [Node.js](https://nodejs.org/en/download/)
-3. Install [Python 3.12](https://www.python.org/downloads/), and the [`setuptools`](https://pypi.org/project/setuptools/) package
-4. On Windows, download [Visual Studio](https://visualstudio.microsoft.com/downloads/) and install "Desktop development with C++", also select the "Windows 10 SDK"
-5. On Linux, install the following library: `sudo apt-get install libfontconfig1-dev`
-6. In the terminal, run: `npm install`
-7. To start the app, run: `npm start`
+Build the application with:
 
-## Join us on Slack
+```sh
+npm run build
+```
 
-If you would like to get involved contributing in any way, head over to our [Slack Channel](https://join.slack.com/t/livechurchsolutions/shared_invite/zt-i88etpo5-ZZhYsQwQLVclW12DKtVflg) and introduce yourself. We'd love to hear from you.
+See [installer delivery](docs/installer-delivery.md) for packaging, supported targets, and distribution limitations. Upstream automatic updates are disabled so they cannot replace this ministry edition with a different build.
+
+## Validation and documentation
+
+The latest delivery passed **230 unit tests** (10 optional integration tests skipped), three packaging safeguard tests, the desktop presentation flow, and the Apple Silicon Mac package checks. The existing Svelte checking backlog remains at 194 errors and 60 warnings.
+
+- [First launch and feature defaults](docs/first-launch.md)
+- [Live speech, captions, and following](docs/live-assistance.md)
+- [Offline library and recognition assets](docs/offline-bundle.md)
+- [Layouts, Bible search, and imports](docs/presentation-features.md)
+- [Ministry branding](docs/ministry-branding.md)
+
+Report problems or request improvements through this repository's [issues](https://github.com/jerrick-godwin/FreeShow-JLM/issues).
+
+## License and acknowledgements
+
+This ministry edition builds on the [ChurchApps upstream presentation project](https://github.com/ChurchApps/FreeShow) and is distributed under [GPL-3.0](LICENSE). Original copyright and license notices are retained. Bundled models, OCR data, and Bible texts have their own notices in [resources/bundled/licenses](resources/bundled/licenses).

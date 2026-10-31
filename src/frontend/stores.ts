@@ -1,3 +1,4 @@
+import { applyFeatureDefaults } from "../shared/featureDefaults"
 // ----- FreeShow -----
 // Here are all the global app variables
 
@@ -218,7 +219,7 @@ export type SlideHighlight = { indexes: number[]; color?: string; icon?: string 
 export const slideDeleteHighlight: Writable<SlideHighlight> = writable(null)
 
 // AI
-export const aiSttStatus: Writable<{ state: "inactive" | "listening" | "stopped" | "error"; message?: string }> = writable({ state: "inactive" })
+export const aiSttStatus: Writable<{ state: "inactive" | "listening" | "stopped" | "error"; message?: string; sessionId?: string }> = writable({ state: "inactive" })
 export const aiLlmStatus: Writable<AiFeatureStatus> = writable({ state: "stopped" })
 export const aiSuggestions: Writable<AiSuggestion[]> = writable([])
 export const aiSmartAction: Writable<AiSuggestion | null> = writable(null)
@@ -415,7 +416,7 @@ export const driveKeys: Writable<any> = writable({})
 export const driveData: Writable<any> = writable({ mainFolderId: null, disabled: false, initializeMethod: null, disableUpload: false })
 
 // AI
-export const ai: Writable<AiSettings> = writable({}) // {}
+export const ai: Writable<AiSettings> = writable(applyFeatureDefaults())
 
 // ----- STORES LIST -----
 

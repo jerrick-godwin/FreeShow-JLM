@@ -1,31 +1,55 @@
-name: Build
+name: Ministry installers
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
-
+  workflow_call:
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-
+  installer:
     strategy:
+      fail-fast: false
       matrix:
-        os:
-          [
-            windows-latest,
-            macos-latest,
-            ubuntu-latest
-          ]
-
+        include:
+          - os: windows-2022
+            platform: win
+            targets: nsis
+            arch: x64
+          - os: macos-15-intel
+            platform: mac
+            targets: dmg zip
+            arch: x64
+          - os: macos-15
+            platform: mac
+            targets: dmg zip
+            arch: arm64
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v5
-
-      - name: Install Node.js and NPM
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build app
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies including native speech runtime
+        run: npm ci --include=optional
+      - name: Prepare and verify complete offline content
+        run: npm run prepare:bundled
+      - name: Test application
+        run: npm run test:unit
+      - name: Test packaging safeguards
+        run: node --test scripts/offlinePackage.test.js
+      - name: Build application
         run: npm run build
+      - name: Build installer and verify installed payload
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --config config/building/electron-builder.local.yaml --${{ matrix.platform }} ${{ matrix.targets }} --${{ matrix.arch }} --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Jesus-Lives-Ministry-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
+          if-no-files-found: error

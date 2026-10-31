@@ -1,12 +1,12 @@
 appId: app.freeshow
-productName: FreeShow
-artifactName: FreeShow-${version}-${arch}.${ext}
+productName: Jesus Lives Ministry
+artifactName: Jesus-Lives-Ministry-${version}-${os}-${arch}.${ext}
 
 files:
     - build/electron/**
     - build/types/**
+    - build/shared/**
     - public/**
-    - "!node_modules/@napi-rs"
     - "!**/node_modules/*/{CHANGELOG*,README*,test*,example*,docs}"
     - "!**/node_modules/*/{*.d.ts,*.ts,*.map}"
     - "!**/node_modules/{@types,typescript}/**"
@@ -16,6 +16,10 @@ files:
     - "!**/node_modules/osr-capture/**/on12_harness.exe"
 
 extraResources:
+    - from: resources/bundled/
+      to: bundled
+      filter:
+          - "**/*"
     - from: node_modules/slideshow/
       to: slideshow
       filter:
@@ -24,21 +28,22 @@ extraResources:
 # windows
 
 win:
-    target: NSIS
-    icon: build/public/icon.png
+    target:
+        - target: nsis
+          arch:
+              - x64
+    icon: public/icon.png
     files:
         - "!**/node_modules/openmediatransport/lib/{macos,linux-*,win-arm64}/**"
         - "!**/node_modules/better-sqlite3/prebuilds/{darwin-*,linux*,win32-arm64}.node"
     asarUnpack:
+        - "**/node_modules/@napi-rs/**"
+        - "**/node_modules/tesseract.js/**"
+        - "**/node_modules/tesseract.js-core/**"
         - "**/node_modules/macadam/**/*.node"
         - "**/node_modules/libspotifyctl/**/*"
         - "**/node_modules/openmediatransport/**"
         - "**/node_modules/sherpa-onnx-*/**"
-    azureSignOptions:
-        publisherName: Live Church Solutions
-        endpoint: https://wus2.codesigning.azure.net/
-        certificateProfileName: FreeShow
-        codeSigningAccountName: FreeShow
 
 # linux
 
@@ -47,6 +52,9 @@ linux:
         - "!**/node_modules/openmediatransport/lib/{macos,win-*}/**"
         - "!**/node_modules/better-sqlite3/prebuilds/{darwin-*,linuxmusl-*,win32-*}.node"
     asarUnpack:
+        - "**/node_modules/@napi-rs/**"
+        - "**/node_modules/tesseract.js/**"
+        - "**/node_modules/tesseract.js-core/**"
         - "**/node_modules/grandiose/**"
         - "**/node_modules/openmediatransport/**"
         - "**/node_modules/macadam/**/*.node"
@@ -70,11 +78,14 @@ deb:
 # macos
 
 mac:
-    icon: build/public/icon.png
+    icon: public/icon.png
     files:
         - "!**/node_modules/openmediatransport/lib/{linux-*,win-*}/**"
         - "!**/node_modules/better-sqlite3/prebuilds/{linux*,win32-*}.node"
     asarUnpack:
+        - "**/node_modules/@napi-rs/**"
+        - "**/node_modules/tesseract.js/**"
+        - "**/node_modules/tesseract.js-core/**"
         - "**/node_modules/macadam/**/*.node"
         - "**/node_modules/openmediatransport/**"
         - "**/node_modules/sherpa-onnx-*/**"
@@ -100,11 +111,14 @@ mac:
         com.apple.security.device.audio-input: true
         com.apple.security.device.camera: true
 
+beforePack: scripts/checkOfflineBundle.js
+afterPack: scripts/checkPackagedBundle.js
+
 afterExtract: scripts/opus.js
-afterSign: scripts/macos/notarize.js
+
 
 dmg:
-    background: build/public/dmg.png
+    backgroundColor: "#0E3B5E"
     sign: false
     contents:
         - x: 140

@@ -76,8 +76,8 @@ export interface ToMainSendPayloads {
     [ToMain.OPEN_FILE2]: { channel: string; id: string; files: string[]; content: { [key: string]: string } }
     [ToMain.RECEIVE_MIDI2]: { id: string; values: any; type: "noteon" | "noteoff" | "control" }
     // AI
-    [ToMain.AI_STATUS]: { state: "listening" | "stopped" | "error"; message?: string }
-    [ToMain.AI_TRANSCRIPT]: { text: string; interim?: boolean; startMs?: number; endMs?: number; language?: string; music?: boolean; utteranceEnd?: boolean; confidence?: number; glue?: boolean }
+    [ToMain.AI_STATUS]: { state: "listening" | "stopped" | "error"; message?: string; sessionId?: string }
+    [ToMain.AI_TRANSCRIPT]: { sessionId?: string; id?: string; revision?: number; text: string; interim?: boolean; startMs?: number; endMs?: number; language?: string; music?: boolean; utteranceEnd?: boolean; confidence?: number; glue?: boolean }
 }
 
 export interface ToMainReturnPayloads {

@@ -44,7 +44,12 @@ import { deleteShows, deleteShowsNotIndexed, getAllShows, getEmptyShows, refresh
 import { correctSpelling } from "../utils/spellcheck"
 import { executeSpotifyCommand, getSpotifyState } from "../utils/spotify"
 import checkForUpdates from "../utils/updater"
-import { sendToMain } from "./main"
+import { sendMain, sendToMain } from "./main"
+
+// Load conversion on demand: its file-dialog dependency participates in the startup store cycle.
+const bundledLibrary = () => require("../bundled/bootstrap") as typeof import("../bundled/bootstrap")
+
+const documentImports = () => require("../data/documents/documentJobs") as typeof import("../data/documents/documentJobs")
 
 // no need to await Promise returns here
 export const mainResponses: MainResponses = {
@@ -61,7 +66,10 @@ export const mainResponses: MainResponses = {
     [Main.CHECK_RAM_USAGE]: () => checkRamUsage(),
     // STORES
     [Main.SETTINGS]: () => getStore("SETTINGS"),
-    [Main.SYNCED_SETTINGS]: () => getStore("SYNCED_SETTINGS"),
+    [Main.SYNCED_SETTINGS]: () => {
+        bundledLibrary().ensureBundledLibrary()
+        return getStore("SYNCED_SETTINGS")
+    },
     [Main.STAGE]: () => getStore("STAGE"),
     [Main.PROJECTS]: () => getStore("PROJECTS"),
     [Main.OVERLAYS]: () => getStore("OVERLAYS"),
@@ -84,20 +92,30 @@ export const mainResponses: MainResponses = {
     [Main.SAVE]: (a) => save(a),
     [Main.BACKUPS]: () => getBackups(),
     [Main.DELETE_BACKUP]: (data) => deleteBackup(data),
+    [Main.DOCUMENT_IMPORT_START]: (data) => documentImports().startDocumentImport(data.languages),
+    [Main.DOCUMENT_IMPORT_STATUS]: (data) => documentImports().documentImportStatus(data.id),
+    [Main.DOCUMENT_IMPORT_CANCEL]: (data) => documentImports().cancelDocumentImport(data.id),
     [Main.IMPORT]: (data) => startImport(data),
     [Main.IMPORT_FILES]: (data) => importFiles(data),
     [Main.BIBLE]: (data) => loadScripture(data),
     [Main.SHOW]: (data) => loadShow(data),
     // MAIN
-    [Main.SHOWS]: (() => loadShowsAsync()) as any,
+    [Main.SHOWS]: (() => {
+        bundledLibrary().ensureBundledLibrary()
+        return loadShowsAsync()
+    }) as any,
     [Main.AUTO_UPDATE]: () => checkForUpdates(),
     [Main.URL]: (data) => openURL(data),
     [Main.LANGUAGE]: (data) => setGlobalMenu(data.strings),
-    [Main.GET_PATHS]: () => getPaths(),
+    [Main.GET_PATHS]: () => {
+        if (bundledLibrary().ensureBundledLibrary(true)) sendMain(Main.SYNCED_SETTINGS, getStore("SYNCED_SETTINGS"))
+        return getPaths()
+    },
     [Main.DATA_PATH]: () => getDataFolderRoot(),
     [Main.UPDATE_DATA_PATH]: (data) => {
         config.set("dataPath", data.newPath)
         createStores(data.oldPath)
+        if (bundledLibrary().ensureBundledLibrary(true)) sendMain(Main.SYNCED_SETTINGS, getStore("SYNCED_SETTINGS"))
     },
     [Main.LOG_ERROR]: (data) => logError(data),
     [Main.OPEN_LOG]: () => openInSystem(_store.ERROR_LOG?.path || ""),
