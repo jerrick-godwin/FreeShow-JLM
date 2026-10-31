@@ -90,7 +90,7 @@ export class NdiSender {
     }
 
     static initNameNDI(name?: string, outputName?: string) {
-        return name || `FreeShow NDI${outputName ? ` - ${outputName}` : ""}`
+        return name || `Jesus Lives Ministry NDI${outputName ? ` - ${outputName}` : ""}`
     }
 
     static isBusyNDI(id: string): boolean {

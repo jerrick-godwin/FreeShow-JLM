@@ -23,7 +23,7 @@
 
 <style>
     :root {
-        --ai-gradient: linear-gradient(135deg, #ff007f, #7928ca, #4ed6ff, #00dfd8);
+        --ai-gradient: linear-gradient(135deg, #b8933a, #ffc805, #f59a00, #0e3b5e);
     }
 
     .card-border-wrapper {
@@ -45,8 +45,8 @@
     }
 
     .card-border-wrapper.state-listening {
-        /* box-shadow: 0 0 calc(8px + var(--audio-level) * 16px) rgba(255, 0, 127, calc(0.3 + var(--audio-level) * 0.4)); */
-        box-shadow: 0 0 calc(20px + var(--audio-level) * 30px) rgba(255, 0, 127, calc(0.2 + var(--audio-level) * 0.4));
+        /* box-shadow: 0 0 calc(8px + var(--audio-level) * 16px) rgba(255, 200, 5, calc(0.3 + var(--audio-level) * 0.4)); */
+        box-shadow: 0 0 calc(20px + var(--audio-level) * 30px) rgba(255, 200, 5, calc(0.2 + var(--audio-level) * 0.4));
     }
 
     .inner-content {

@@ -13,13 +13,16 @@ const sanitizeError = (msg: string) => msg.replace(/\s+/g, " ").trim().slice(0, 
 export class SpeechToText {
     static transcriberEngine: SttEngine | null = null
     static sessionToken = 0
+    private static currentSession = ""
+    private static segmentNumber = 0
+    private static revision = 0
     private static segmentListeners = new Set<SegmentListener>()
 
-    static async listen(engine: string, options: SttEngineOptions): Promise<{ started: boolean; error?: string }> {
+    static async listen(engine: string, options: SttEngineOptions): Promise<{ started: boolean; error?: string; sessionId?: string }> {
         await this.stopInternal(false)
         const token = ++this.sessionToken
 
-        const created = await this.createEngine(engine, options)
+        const created = await this.createEngine(engine, options, token)
         if ("error" in created) return { started: false, error: created.error }
 
         if (token !== this.sessionToken) {
@@ -27,6 +30,9 @@ export class SpeechToText {
             return { started: false }
         }
 
+        this.currentSession = `stt-${token}-${Date.now()}`
+        this.segmentNumber = 0
+        this.revision = 0
         this.transcriberEngine = created.transcriber
 
         try {
@@ -39,8 +45,8 @@ export class SpeechToText {
 
         if (token !== this.sessionToken) return { started: false }
 
-        sendToMain(ToMain.AI_STATUS, { state: "listening" })
-        return { started: true }
+        sendToMain(ToMain.AI_STATUS, { state: "listening", sessionId: this.currentSession })
+        return { started: true, sessionId: this.currentSession }
     }
 
     static stop() {
@@ -48,10 +54,14 @@ export class SpeechToText {
     }
 
     private static async stopInternal(emitStatus: boolean) {
-        this.sessionToken++
+        const stopToken = ++this.sessionToken
+        this.currentSession = ""
         const active = this.transcriberEngine
         this.transcriberEngine = null
-        if (!active) return
+        if (!active) {
+            if (emitStatus) sendToMain(ToMain.AI_STATUS, { state: "stopped" })
+            return
+        }
 
         try {
             await active.stop()
@@ -59,6 +69,7 @@ export class SpeechToText {
             console.error("Error stopping STT engine:", err)
         }
 
+        if (stopToken !== this.sessionToken) return
         sendToMain(ToMain.AI_TRANSCRIPT, { text: "", interim: true })
         if (emitStatus) sendToMain(ToMain.AI_STATUS, { state: "stopped" })
     }
@@ -67,11 +78,25 @@ export class SpeechToText {
         this.transcriberEngine?.pushAudio(buffer)
     }
 
-    private static async createEngine(engine: string, options: SttEngineOptions): Promise<{ transcriber: SttEngine } | { error: string }> {
-        if (engine === "nemotron") {
-            const status = await LocalModelManager.getStatus("nemotron")
-            if (!status.ready) return { error: status.error || "Nemotron could not be initialized" }
-            return { transcriber: new NemotronTranscriber({ ...options }, this.onSegment, this.onError, this.onInterim) }
+    private static async createEngine(engine: string, options: SttEngineOptions, token: number): Promise<{ transcriber: SttEngine } | { error: string }> {
+        if (engine === "nemotron" || engine === "whisper") {
+            const status = await LocalModelManager.getStatus(engine)
+            if (!status.ready) return { error: status.error || "Speech recognition could not be initialized" }
+            return {
+                transcriber: new NemotronTranscriber(
+                    { ...options },
+                    (segment) => {
+                        if (token === this.sessionToken) this.onSegment(segment)
+                    },
+                    (error) => {
+                        if (token === this.sessionToken) this.onError(error)
+                    },
+                    (text) => {
+                        if (token === this.sessionToken) this.onInterim(text)
+                    },
+                    engine
+                )
+            }
         }
 
         console.error(`Unknown STT engine: ${engine}`)
@@ -82,12 +107,14 @@ export class SpeechToText {
     static removeSegmentListener = (listener: SegmentListener) => this.segmentListeners.delete(listener)
 
     private static onSegment = (segment: TranscriberSegment) => {
-        sendToMain(ToMain.AI_TRANSCRIPT, segment)
+        sendToMain(ToMain.AI_TRANSCRIPT, { ...segment, sessionId: this.currentSession, id: `${this.currentSession}:${this.segmentNumber}`, revision: ++this.revision })
+        this.segmentNumber++
+        this.revision = 0
         this.segmentListeners.forEach((listener) => listener(segment))
     }
 
     private static onInterim = (text: string) => {
-        sendToMain(ToMain.AI_TRANSCRIPT, { text, interim: true })
+        sendToMain(ToMain.AI_TRANSCRIPT, { text, interim: true, sessionId: this.currentSession, id: `${this.currentSession}:${this.segmentNumber}`, revision: ++this.revision })
     }
 
     private static onError = (message: string) => {

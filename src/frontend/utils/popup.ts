@@ -1,3 +1,4 @@
+import DocumentImport from "../components/main/popups/DocumentImport.svelte"
 import { onDestroy, type ComponentType } from "svelte"
 import { get } from "svelte/store"
 import type { Popups } from "../../types/Main"
@@ -99,6 +100,7 @@ export const popups: { [key in Popups]: ComponentType } = {
     confirm: Confirm,
     custom_text: CustomText,
     import: Import,
+    document_import: DocumentImport,
     export: Export,
     show: CreateShow,
     delete_show: DeleteShow,

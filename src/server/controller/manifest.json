@@ -1,12 +1,12 @@
 {
     "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-    "name": "ControlShow",
-    "short_name": "ControlShow",
+    "name": "Jesus Lives Ministry Controller",
+    "short_name": "JLM Controller",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#242832",
-    "theme_color": "#242832",
-    "description": "A remote controller app for FreeShow.",
+    "background_color": "#0E3B5E",
+    "theme_color": "#0E3B5E",
+    "description": "Controller for Jesus Lives Evangelical International Ministry.",
     "icons": [
         {
             "src": "icon.png",

@@ -1,3 +1,4 @@
+import { ensureIndependentLayouts, installIndependentLayouts } from "../utils/contentLayouts"
 import { get } from "svelte/store"
 import type { ContentProviderId } from "../../electron/contentProviders/base/types"
 import type { ToMainSendPayloads } from "../../types/IPC/ToMain"
@@ -136,14 +137,21 @@ export const mainResponses: MainResponses = {
         projectTemplates.set(a.projectTemplates || {})
     },
     [Main.OVERLAYS]: (a) => overlays.set(a),
-    [Main.TEMPLATES]: (a) => templates.set(a),
+    [Main.TEMPLATES]: (a) => {
+        templates.set(a)
+        installIndependentLayouts()
+        ensureIndependentLayouts()
+    },
     [Main.EVENTS]: (a) => events.set(a),
     [Main.MEDIA]: (a) => media.set(a),
     [Main.THEMES]: (a) => {
+        // Replace the previous built-in palette; retain separately created custom themes.
+        const legacyDefault = a.default?.colors
+        if (legacyDefault && ["#242832", "#292c36"].includes(legacyDefault.primary?.toLowerCase()) && ["#f0008c", "#e6349c"].includes(legacyDefault.secondary?.toLowerCase())) a.default = clone(defaultThemes.default)
         themes.set(Object.keys(a).length ? a : clone(defaultThemes))
 
         // update if themes are loaded after settings
-        if (get(theme) !== "default") updateThemeValues(get(themes)[get(theme)])
+        updateThemeValues(get(themes)[get(theme)])
     },
     [Main.DRIVE_API_KEY]: (a) => driveKeys.set(a),
     [Main.HISTORY]: (a) => {
@@ -620,6 +628,10 @@ export const mainResponses: MainResponses = {
     [Main.TIMECODE_AUDIO_DATA]: (data) => processTimecodeFrame(data!),
 
     // AI
-    [ToMain.AI_STATUS]: (data) => aiSttStatus.set(data),
+    [ToMain.AI_STATUS]: (data) => {
+        if (data.state === "listening" && data.sessionId) Transcript.begin(data.sessionId)
+        else if (data.state !== "listening") Transcript.stop()
+        aiSttStatus.set(data)
+    },
     [ToMain.AI_TRANSCRIPT]: (data) => Transcript.push(data)
 }

@@ -14,6 +14,8 @@ export interface Styles {
     name: string
     layers?: StyleLayers[]
     background?: string
+    songBackground?: { color?: string; image?: string }
+    bibleBackground?: { color?: string; image?: string }
     backgroundImage?: string
     clearStyleBackgroundOnText?: boolean
     transition?: { [key: string]: Transition }

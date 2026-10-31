@@ -133,7 +133,7 @@ export class IcecastSender {
         client.connect(config.port, config.host, () => {
             this.isConnecting = false
 
-            let headerText = `PUT ${mountPath} HTTP/1.1\r\n` + `Host: ${config.host}:${config.port}\r\n` + `Authorization: Basic ${auth}\r\n` + `Content-Type: audio/ogg; codecs=opus\r\n` + `Ice-Name: FreeShow Audio Stream\r\n` + `Ice-Description: Live Audio Stream from FreeShow\r\n` + `Ice-Genre: Live\r\n` + `Ice-Public: 0\r\n` + `Expect: 100-continue\r\n` + `User-Agent: FreeShow/1.0\r\n`
+            let headerText = `PUT ${mountPath} HTTP/1.1\r\n` + `Host: ${config.host}:${config.port}\r\n` + `Authorization: Basic ${auth}\r\n` + `Content-Type: audio/ogg; codecs=opus\r\n` + `Ice-Name: Jesus Lives Ministry Audio Stream\r\n` + `Ice-Description: Live Audio Stream from Jesus Lives Ministry\r\n` + `Ice-Genre: Live\r\n` + `Ice-Public: 0\r\n` + `Expect: 100-continue\r\n` + `User-Agent: JesusLivesMinistry/1.0\r\n`
 
             if (this.currentSongTitle) {
                 headerText += `Ice-Title: ${this.currentSongTitle}\r\n`
@@ -323,7 +323,7 @@ function parseArtistAndTitle(songTitle: string): { artist: string; title: string
 }
 
 function createOpusTagsPacket(artist: string, title: string): Buffer {
-    const vendor = Buffer.from("FreeShow")
+    const vendor = Buffer.from("Jesus Lives Ministry")
     const comments: Buffer[] = []
 
     if (title) comments.push(Buffer.from(`TITLE=${title}`))

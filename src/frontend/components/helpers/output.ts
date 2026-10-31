@@ -1,3 +1,4 @@
+import { presentationIntent, type PresentationIntent } from "../../ai/live/presentationIntent"
 import { get } from "svelte/store"
 import { uid } from "uid"
 import { OUTPUT } from "../../../types/Channels"
@@ -142,7 +143,7 @@ export function toggleOutput(id: string) {
 // overlays: [],
 // transition: null,
 let resetActionTrigger = false
-export function setOutput(type: string, data: any, toggle = false, outputId = "", add = false) {
+export function setOutput(type: string, data: any, toggle = false, outputId = "", add = false, origin: PresentationIntent["origin"] = "manual") {
     const ref = data?.layout ? _show(data.id).layouts([data.layout]).ref()[0] || [] : []
 
     // stop any active break slide recording when the slide changes
@@ -153,6 +154,7 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
     const allOutputIds = resolvedBindings.length ? resolvedBindings : getActiveOutputs(get(outputs), true, false, true)
     const resolvedOutputId = outputId ? resolveOutputId(outputId) || outputId : ""
     const outs = resolvedOutputId ? [resolvedOutputId] : allOutputIds
+    presentationIntent({ type, outputIds: outs, origin, clearing: data === null || data === undefined })
 
     // track usage (& set attributionString)
     if (type === "slide" && data?.id) {
@@ -1179,7 +1181,7 @@ export async function checkFFmpeg(): Promise<boolean> {
     const res = await requestMain(Main.FFMPEG_CHECK)
     if (res?.installed) return true
 
-    if (await confirmCustom("To create an RTMP output, FreeShow needs to download and install FFmpeg. Do you want to proceed?")) {
+    if (await confirmCustom("To create an RTMP output, Jesus Lives Ministry needs to download and install FFmpeg. Do you want to proceed?")) {
         const downloadRes = await requestMain(Main.FFMPEG_DOWNLOAD)
         if (downloadRes?.success) {
             newToast("FFmpeg installed successfully!")

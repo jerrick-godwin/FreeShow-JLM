@@ -28,7 +28,13 @@ export class NemotronTranscriber {
     private restarting = false
     private modelDir = ""
 
-    constructor(options: SttEngineOptions, onSegment: (segment: TranscriberSegment) => void, onError: (message: string) => void, onInterim?: (text: string) => void) {
+    constructor(
+        options: SttEngineOptions,
+        onSegment: (segment: TranscriberSegment) => void,
+        onError: (message: string) => void,
+        onInterim?: (text: string) => void,
+        private engineId = "nemotron"
+    ) {
         this.options = options
         this.onSegment = onSegment
         this.onError = onError
@@ -36,9 +42,10 @@ export class NemotronTranscriber {
     }
 
     async start() {
-        this.modelDir = LocalModelManager.getModelDir("nemotron")
+        this.modelDir = LocalModelManager.getModelDir(this.engineId)
         if (await this.startWorker()) return true
         if (this.startErrorMessage) throw new Error(this.startErrorMessage)
+        if (this.engineId === "whisper") throw new Error("The multilingual recognition process could not start.")
 
         this.fallback = new NemotronDriver({
             language: this.options.language || "en",
@@ -97,7 +104,7 @@ export class NemotronTranscriber {
         try {
             const { utilityProcess } = require("electron") as typeof import("electron")
             if (!utilityProcess?.fork) return false
-            child = utilityProcess.fork(path.join(__dirname, "./nemotronWorker.js"), [], { serviceName: "FreeShow AI transcription" })
+            child = utilityProcess.fork(path.join(__dirname, this.engineId === "whisper" ? "./whisperWorker.js" : "./nemotronWorker.js"), [], { serviceName: `Jesus Lives Ministry ${this.engineId} transcription` })
         } catch (err) {
             console.error("[nemotron] Could not spawn the decode process:", err)
             return false
@@ -116,7 +123,7 @@ export class NemotronTranscriber {
             if (!this.stopped) this.onError(`Nemotron transcription process exited unexpectedly (code ${code})`)
         })
 
-        this.post(child, { type: "start", language: this.options.language || "en", decodeLanguage: this.options.language, modelDir: this.modelDir })
+        this.post(child, { type: "start", language: this.options.language || (this.engineId === "whisper" ? "auto" : "en"), decodeLanguage: this.options.language, modelDir: this.modelDir })
 
         const ok = await new Promise<boolean>((resolve) => {
             const timer = setTimeout(() => {

@@ -1,3 +1,5 @@
+import { applyFeatureDefaults } from "../../shared/featureDefaults"
+import { ensureIndependentLayouts } from "./contentLayouts"
 import { get } from "svelte/store"
 import { uid } from "uid"
 import { OUTPUT } from "../../types/Channels"
@@ -123,6 +125,7 @@ export function updateSyncedSettings(data: any) {
         if (updateList[key as SaveListSyncedSettings]) updateList[key as SaveListSyncedSettings](value)
         else console.info("RECEIVED UNKNOWN SETTINGS KEY:", key)
     })
+    ensureIndependentLayouts()
 
     loadedState.set([...get(loadedState), "synced_settings"])
 }
@@ -152,6 +155,7 @@ export function updateSettings(data: any) {
         if (updateList[key as SaveListSettings]) updateList[key as SaveListSettings](value)
         else console.info("RECEIVED UNKNOWN SETTINGS KEY:", key)
     })
+    ensureIndependentLayouts()
 
     if (!isMainWindow()) return
 
@@ -480,5 +484,5 @@ const updateList: { [key in SaveListSettings | SaveListSyncedSettings]: any } = 
     effects: (a: any) => effects.set(a),
     deletedDefaults: (a: any) => deletedDefaults.set({ ...get(deletedDefaults), ...a }),
     audioRouting: (v: any) => initAudioRouting(v),
-    ai: (a: any) => ai.set(a)
+    ai: (a: any) => ai.set(applyFeatureDefaults(a || {}))
 }

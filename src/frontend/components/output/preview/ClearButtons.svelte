@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { contentBackground } from "../../../../shared/contentLayouts"
     import { createEventDispatcher } from "svelte"
     import { clearAudio } from "../../../audio/audioFading"
     import { activeTimers, dictionary, isFadingOut, isTimelinePlaying, labelsDisabled, media, outLocked, outputCache, outputs, overlayTimers, playingAudio, playingMetronome, styles, timelineRecordingAction } from "../../../stores"
@@ -70,7 +71,7 @@
     $: output = $outputs[outputId] || {}
     $: outputStyle = $styles[output.style || ""] || {}
     $: canDisplayStyleBG = !outputStyle.clearStyleBackgroundOnText || (!output.out?.slide && !output.out?.background)
-    $: styleBackground = backgroundCleared && !$outLocked && outputStyle.backgroundImage && canDisplayStyleBG
+    $: styleBackground = backgroundCleared && !$outLocked && contentBackground({ ...outputStyle, name: outputStyle.name || "" }, isScripture).image && canDisplayStyleBG
     $: outBackground = output.out?.background || {}
     $: backgroundData = $media[outBackground.path || ""] || {}
 

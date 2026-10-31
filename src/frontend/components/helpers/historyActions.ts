@@ -354,7 +354,7 @@ async function handleShows(obj, _data, initializing) {
         }, 2000)
     }
 
-    if (!deleting && Object.keys(get(showsCache)).length >= 100) {
+    if (!deleting && !obj.newData?.preserveActiveShow && Object.keys(get(showsCache)).length >= 100) {
         if (initializing) save()
         setTimeout(() => {
             showsCache.set({})

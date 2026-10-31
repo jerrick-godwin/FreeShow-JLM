@@ -1,12 +1,12 @@
 {
     "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-    "name": "RemoteShow",
-    "short_name": "RemoteShow",
+    "name": "Jesus Lives Ministry Remote",
+    "short_name": "JLM Remote",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#242832",
-    "theme_color": "#242832",
-    "description": "A remote for FreeShow.",
+    "background_color": "#0E3B5E",
+    "theme_color": "#0E3B5E",
+    "description": "Remote for Jesus Lives Evangelical International Ministry.",
     "icons": [
         {
             "src": "icon.png",

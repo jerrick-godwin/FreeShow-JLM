@@ -20,7 +20,7 @@
         "libraries": "Upotrebljene biblioteke",
         "thanks": "Zahvaljujući",
         "new_update": "Dostupna je nova verzija",
-        "download": "Idi na freeshow.app da ju preuzmeš",
+        "download": "Obratite se administratoru službe za ažurirani instalacioni program.",
         "changes": "Šta je novo"
     },
     "tooltip": {
@@ -345,7 +345,7 @@
         "icon": "Ikoknice",
         "manage_icons": "Manage icons",
         "choose_camera": "Chooose camera",
-        "initialize": "Dobrodošli u FreeShow",
+        "initialize": "Dobrodošli u Jesus Lives Ministry",
         "unsaved": "Promene nisu sačuvane! Svejedno izađi iz programa?",
         "cancel": "Odustani",
         "continue": "Nastavi",

@@ -1,0 +1,158 @@
+{
+  "version": "jl-2026-10-18-v1",
+  "library": {
+    "songbook": {
+      "file": "songbook.json",
+      "size": 10597304,
+      "sha256": "15eda3974e794e09567a8a593f5bd7bda5a605bd9dcd840139f769cfc93a6a46",
+      "records": 935,
+      "source": "2026-10-18_00-43.zip",
+      "sourceSha256": "702f8279f36886d08ba8c708ab98a5110267096e2914ad2fff4935785fd9cf4f"
+    },
+    "bibles": [
+      {
+        "file": "bibles/en.json",
+        "size": 4770628,
+        "sha256": "8e0645c97532a3b8e4017b7bbc00047ee53c3ad7e12c05508c809c215741100f",
+        "id": "jl-bible-en-web",
+        "language": "en",
+        "name": "World English Bible (English, offline)",
+        "books": 66,
+        "chapters": 1189,
+        "verses": 31098
+      },
+      {
+        "file": "bibles/si.json",
+        "size": 10550240,
+        "sha256": "2c9370fd6610a178c13a8fa5ac1217d46db3cb97c5d4679aaada93993e8dfb39",
+        "id": "a58e1d76e51",
+        "language": "si",
+        "name": "ශුද්ධ බයිබලය (සිංහල)",
+        "books": 66,
+        "chapters": 1189,
+        "verses": 31067
+      },
+      {
+        "file": "bibles/ta.json",
+        "size": 13176721,
+        "sha256": "3e87c2f6de67b5903040983b24e6695d0d2225c0babde2abac5b651316d259a6",
+        "id": "dacf165f756",
+        "language": "ta",
+        "name": "பரிசுத்த வேதாகமம் (தமிழ்)",
+        "books": 66,
+        "chapters": 1189,
+        "verses": 31102
+      }
+    ]
+  },
+  "files": [
+    {
+      "file": "bibles/en.json",
+      "size": 4770628,
+      "sha256": "8e0645c97532a3b8e4017b7bbc00047ee53c3ad7e12c05508c809c215741100f"
+    },
+    {
+      "file": "bibles/si.json",
+      "size": 10550240,
+      "sha256": "2c9370fd6610a178c13a8fa5ac1217d46db3cb97c5d4679aaada93993e8dfb39"
+    },
+    {
+      "file": "bibles/ta.json",
+      "size": 13176721,
+      "sha256": "3e87c2f6de67b5903040983b24e6695d0d2225c0babde2abac5b651316d259a6"
+    },
+    {
+      "file": "licenses/tesseract-Apache-2.0.txt",
+      "size": 10173,
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9"
+    },
+    {
+      "file": "licenses/whisper-MIT.txt",
+      "size": 1063,
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d"
+    },
+    {
+      "file": "licenses/world-english-bible.html",
+      "size": 3061,
+      "sha256": "c011b4c8e8eb82a532d0af7b65b08d8ba5559548af1cfba200d3e3d7b6828777"
+    },
+    {
+      "file": "models/whisper/small-decoder.int8.onnx",
+      "size": 262226114,
+      "sha256": "acad50b5c782696e91b55914cc5ab4f756f1532f76e22aa6fc615f39fb69a8ee",
+      "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/8f3c18b358db4d1f2fc1eae49d75cd20989e4309/small-decoder.int8.onnx"
+    },
+    {
+      "file": "models/whisper/small-encoder.int8.onnx",
+      "size": 112442483,
+      "sha256": "4cbe7b22fa9026b843b60a68640c747de05bafb1a11b57edc0e66c232d9f33a9",
+      "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/8f3c18b358db4d1f2fc1eae49d75cd20989e4309/small-encoder.int8.onnx"
+    },
+    {
+      "file": "models/whisper/small-tokens.txt",
+      "size": 816730,
+      "sha256": "b34b360dbb493e781e479794586d661700670d65564001f23024971d1f2fa126",
+      "url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/8f3c18b358db4d1f2fc1eae49d75cd20989e4309/small-tokens.txt"
+    },
+    {
+      "file": "ocr/eng.traineddata.gz",
+      "size": 2952873,
+      "sha256": "45b4cb346724ac1774f1c36f42f182b887bcdb28ebe63e6fff90ac41f3fcff91",
+      "url": "https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz"
+    },
+    {
+      "file": "ocr/sin.traineddata.gz",
+      "size": 1138317,
+      "sha256": "02d34b1f6565d26991fa25605c0bbddd3e39d9eefe471fce4b8a27fe9363ec94",
+      "url": "https://cdn.jsdelivr.net/npm/@tesseract.js-data/sin/4.0.0_best_int/sin.traineddata.gz"
+    },
+    {
+      "file": "ocr/tam.traineddata.gz",
+      "size": 1446167,
+      "sha256": "2c4b255ede87931cb56c20a5b2b8e2cda4913e34fb3e4957f9b9e04ea069ff21",
+      "url": "https://cdn.jsdelivr.net/npm/@tesseract.js-data/tam/4.0.0_best_int/tam.traineddata.gz"
+    },
+    {
+      "file": "songbook.json",
+      "size": 10597304,
+      "sha256": "15eda3974e794e09567a8a593f5bd7bda5a605bd9dcd840139f769cfc93a6a46"
+    },
+    {
+      "file": "licenses/PROVIDED-CONTENT.txt",
+      "size": 832,
+      "sha256": "1f932c66cd562be39528cbdf95f3dbc640c35cfb2d0b96b63ca1e080654f61b0"
+    }
+  ],
+  "sources": {
+    "speech": {
+      "model": "Quantized Whisper small multilingual ONNX",
+      "revision": "8f3c18b358db4d1f2fc1eae49d75cd20989e4309",
+      "source": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small",
+      "license": "MIT (upstream Whisper weights)",
+      "languages": [
+        "en",
+        "si",
+        "ta"
+      ]
+    },
+    "ocr": {
+      "languages": [
+        "eng",
+        "sin",
+        "tam"
+      ],
+      "source": "https://github.com/naptha/tessdata",
+      "license": "Apache-2.0"
+    },
+    "englishBible": {
+      "source": "https://ebible.org/Scriptures/engwebp_usfx.zip",
+      "sourceSha256": "66f99b22a380d8ef8dbd9d401806fc02be3650e5fe3dbb0cec4d9693b53e1e44",
+      "license": "Public Domain",
+      "conversion": "66 canonical books, original numbered verse text; headings and notes excluded"
+    },
+    "sinhalaTamilBibles": {
+      "source": "Existing user-provided local FreeShow Bible library",
+      "license": "Original metadata retained; no new license asserted"
+    }
+  }
+}

@@ -1,12 +1,12 @@
 {
     "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-    "name": "StageShow",
-    "short_name": "StageShow",
+    "name": "Jesus Lives Ministry Stage",
+    "short_name": "JLM Stage",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#242832",
-    "theme_color": "#242832",
-    "description": "A stage display for FreeShow.",
+    "background_color": "#0E3B5E",
+    "theme_color": "#0E3B5E",
+    "description": "Stage for Jesus Lives Evangelical International Ministry.",
     "icons": [
         {
             "src": "icon.png",

@@ -224,7 +224,7 @@ export class WebRtcHost {
         /* eslint-disable no-useless-escape */
         return `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>FreeShow WebRTC WHIP Host</title></head>
+<head><meta charset="UTF-8"><title>Jesus Lives Ministry WebRTC Host</title></head>
 <body>
 <div id="canvases" style="display:none"></div>
 <script>

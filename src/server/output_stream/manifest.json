@@ -1,12 +1,12 @@
 {
     "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-    "name": "FreeShow Output",
-    "short_name": "FreeShow Output",
+    "name": "Jesus Lives Ministry Output",
+    "short_name": "JLM Output",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#242832",
-    "theme_color": "#242832",
-    "description": "View the output from FreeShow.",
+    "background_color": "#0E3B5E",
+    "theme_color": "#0E3B5E",
+    "description": "Output for Jesus Lives Evangelical International Ministry.",
     "icons": [
         {
             "src": "icon.png",

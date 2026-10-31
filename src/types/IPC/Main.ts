@@ -1,3 +1,4 @@
+import type { DocumentImportJob, ImportLanguage } from "../DocumentImport"
 import type { Display } from "electron"
 import type { ExifData } from "exif"
 import type { Stats } from "fs"
@@ -58,6 +59,9 @@ export enum Main {
     /////
     IMPORT = "IMPORT",
     IMPORT_FILES = "IMPORT_FILES",
+    DOCUMENT_IMPORT_START = "DOCUMENT_IMPORT_START",
+    DOCUMENT_IMPORT_STATUS = "DOCUMENT_IMPORT_STATUS",
+    DOCUMENT_IMPORT_CANCEL = "DOCUMENT_IMPORT_CANCEL",
     BIBLE = "BIBLE",
     SHOW = "SHOW",
     SAVE = "SAVE",
@@ -201,6 +205,9 @@ export interface MainSendPayloads {
     /////
     [Main.IMPORT]: { channel: string; format: { name: string; extensions: string[] } }
     [Main.IMPORT_FILES]: { id: string; paths: string[] }
+    [Main.DOCUMENT_IMPORT_START]: { languages: ImportLanguage[] }
+    [Main.DOCUMENT_IMPORT_STATUS]: { id: string }
+    [Main.DOCUMENT_IMPORT_CANCEL]: { id: string }
     [Main.BIBLE]: { id: string; name: string }
     [Main.SHOW]: { id: string; name: string }
     [Main.SAVE]: SaveData
@@ -309,6 +316,9 @@ export interface MainSendPayloads {
 }
 
 export interface MainReturnPayloads {
+    [Main.DOCUMENT_IMPORT_START]: Promise<DocumentImportJob | null>
+    [Main.DOCUMENT_IMPORT_STATUS]: DocumentImportJob | null
+    [Main.DOCUMENT_IMPORT_CANCEL]: Promise<boolean>
     // DEV
     [Main.IS_DEV]: boolean
     [Main.GET_CACHE_PATH]: string
@@ -413,7 +423,7 @@ export interface MainReturnPayloads {
     [Main.ENCODER_DETECT]: Promise<EncoderDetection>
     // AI
     [Main.AI_GET_BIN]: Promise<{ path: string; name: string; size: number }[]>
-    [Main.AI_LISTEN_START]: Promise<{ started: boolean; error?: string }>
+    [Main.AI_LISTEN_START]: Promise<{ started: boolean; error?: string; sessionId?: string }>
     [Main.AI_GET_STATUS]: Promise<{ [key: string]: EngineStatus }>
     [Main.AI_SETUP]: Promise<boolean>
     [Main.AI_SET_KEY]: Promise<boolean>
