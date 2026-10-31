@@ -4,6 +4,11 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      signed:
+        description: 'Build trusted release installers (requires signing secrets)'
+        type: boolean
+        default: true
+
       release_tag:
         description: 'Existing tag to publish; leave blank to build installers'
         required: false
@@ -13,8 +18,28 @@ on:
         required: false
         type: string
   workflow_call:
+    inputs:
+      signed:
+        type: boolean
+        default: true
+    secrets:
+      MAC_CSC_LINK:
+        required: false
+      MAC_CSC_KEY_PASSWORD:
+        required: false
+      WIN_CSC_LINK:
+        required: false
+      WIN_CSC_KEY_PASSWORD:
+        required: false
+      APPLE_ID:
+        required: false
+      APPLE_APP_SPECIFIC_PASSWORD:
+        required: false
+      APPLE_TEAM_ID:
+        required: false
 jobs:
   installer:
+    name: installer (${{ matrix.os }}, ${{ matrix.platform }}, ${{ matrix.targets }}, ${{ matrix.arch }})
     if: ${{ !inputs.release_tag }}
     strategy:
       fail-fast: false
@@ -24,15 +49,30 @@ jobs:
             platform: win
             targets: nsis
             arch: x64
+            certificate: WIN_CSC_LINK
+            certificate_password: WIN_CSC_KEY_PASSWORD
           - os: macos-15-intel
             platform: mac
             targets: dmg zip
             arch: x64
+            certificate: MAC_CSC_LINK
+            certificate_password: MAC_CSC_KEY_PASSWORD
           - os: macos-15
             platform: mac
             targets: dmg zip
             arch: arm64
+            certificate: MAC_CSC_LINK
+            certificate_password: MAC_CSC_KEY_PASSWORD
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    env:
+      SIGNED_RELEASE: ${{ github.event_name != 'pull_request' && inputs.signed && 'true' || 'false' }}
+      CSC_LINK: ${{ github.event_name != 'pull_request' && inputs.signed && secrets[matrix.certificate] || '' }}
+      CSC_KEY_PASSWORD: ${{ github.event_name != 'pull_request' && inputs.signed && secrets[matrix.certificate_password] || '' }}
+      APPLE_ID: ${{ github.event_name != 'pull_request' && inputs.signed && secrets.APPLE_ID || '' }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ github.event_name != 'pull_request' && inputs.signed && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+      APPLE_TEAM_ID: ${{ github.event_name != 'pull_request' && inputs.signed && secrets.APPLE_TEAM_ID || '' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -41,6 +81,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Check release credentials before building
+        if: env.SIGNED_RELEASE == 'true'
+        run: node scripts/checkSigningCredentials.js
       - name: Install dependencies including native speech runtime
         run: npm ci --include=optional
       - name: Prepare and verify complete offline content
@@ -48,13 +91,20 @@ jobs:
       - name: Test application
         run: npm run test:unit
       - name: Test packaging safeguards
-        run: node --test scripts/offlinePackage.test.js
+        run: node --test scripts/offlinePackage.test.js scripts/releaseSigning.test.js
+      - name: Test stable publisher safeguards
+        run: python -m unittest discover -s scripts -p test_release_signing.py
       - name: Build application
         run: npm run build
       - name: Build installer and verify installed payload
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: npx electron-builder --config config/building/electron-builder.local.yaml --${{ matrix.platform }} ${{ matrix.targets }} --${{ matrix.arch }} --publish never
+        shell: bash
+        run: |
+          config=config/building/electron-builder.local.yaml
+          if [ "$SIGNED_RELEASE" = "true" ]; then config=config/building/electron-builder.yaml; fi
+          npx electron-builder --config "$config" --${{ matrix.platform }} ${{ matrix.targets }} --${{ matrix.arch }} --publish never
+      - name: Verify signed release artifacts
+        if: env.SIGNED_RELEASE == 'true'
+        run: python scripts/verifySignedRelease.py --platform ${{ matrix.platform }} --arch ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
           name: Jesus-Lives-Ministry-${{ matrix.platform }}-${{ matrix.arch }}

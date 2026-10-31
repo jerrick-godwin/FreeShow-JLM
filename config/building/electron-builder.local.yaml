@@ -1,7 +1,13 @@
+# Development builds only. Never publish these as stable releases.
 extends: config/building/electron-builder.yaml
+forceCodeSigning: false
 
 win:
     azureSignOptions: null
 
 mac:
     identity: null
+    notarize: false
+
+dmg:
+    sign: false
