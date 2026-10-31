@@ -42,7 +42,7 @@ def main():
     prefix = f'Jesus-Lives-Ministry-{version}'
     expected = {f'{prefix}-win-x64.exe', *[f'{prefix}-mac-{arch}.{extension}' for arch in ('x64', 'arm64') for extension in ('dmg', 'zip')]}
     if len(files) != 5 or {path.name for path in files} != expected:
-        raise ValueError('Unexpected installer files')
+        raise ValueError(f'Unexpected installer files: {[path.name for path in files]}')
     hashes = []
     for path in files:
         if path.stat().st_size < 1_000_000:
@@ -64,7 +64,7 @@ def main():
     else:
         run('gh', 'release', 'create', tag, '--repo', repo, '--verify-tag', '--draft', '--title', f'Jesus Lives Ministry {tag}', '--notes-file', 'RELEASE_NOTES.md')
     run('gh', 'release', 'upload', tag, '--repo', repo, '--clobber', *map(str, files), str(checksums))
-    release = data('gh', 'api', f'repos/{repo}/releases/tags/{tag}')
+    release = data('gh', 'release', 'view', tag, '--repo', repo, '--json', 'assets')
     if {asset['name']: asset['size'] for asset in release['assets']} != {path.name: path.stat().st_size for path in [*files, checksums]}:
         raise ValueError('Uploaded assets differ from the expected files')
     run('gh', 'release', 'edit', tag, '--repo', repo, '--notes-file', 'RELEASE_NOTES.md', '--draft=false', '--prerelease=false', '--latest')
