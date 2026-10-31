@@ -126,6 +126,7 @@ test("Launch electron app", async () => {
         expect(await ministryBrand.locator("img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true)
         expect(await window.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--secondary").trim().toUpperCase())).toBe("#FFC805")
 
+        await expect(window.locator(".drawer").getByText("001 Chorus", { exact: true }).first()).toBeVisible({ timeout: 10000 })
         await capture("04-ministry-dashboard")
 
         // Fresh setup installs the complete local bundle, without importing or downloading.

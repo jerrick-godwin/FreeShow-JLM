@@ -1,10 +1,10 @@
 {
     "name": "freeshow",
-    "version": "1.6.8-beta.2",
+    "version": "1.0.0",
     "private": true,
     "main": "build/electron/index.js",
-    "description": "Show song lyrics and more for free!",
-    "repository": "git@github.com:ChurchApps/FreeShow.git",
+    "description": "Ministry song, Scripture, caption and live presentation software",
+    "repository": "git+https://github.com/jerrick-godwin/FreeShow-JLM.git",
     "author": "ChurchApps <support@livecs.org>",
     "license": "GPL-3.0",
     "engines": {

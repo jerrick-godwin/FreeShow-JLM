@@ -41,6 +41,8 @@ These screenshots show the current application with a temporary Colombo example 
 
 ## Offline use and installer status
 
+Download available packages from [GitHub Releases](https://github.com/jerrick-godwin/FreeShow-JLM/releases). See each release for platform validation and known limitations.
+
 The installers are configured to include the church library, three Bibles, speech model, and English/Sinhala/Tamil OCR data. The offline payload is approximately **401 MiB before compression**; installed copies use local resources without a first-run download. Existing library records are preserved during setup and upgrades.
 
 An unsigned **Apple Silicon Mac** application has passed packaging, native speech-runtime, and offline first-launch checks. **Windows x64 and Intel Mac installer testing, signing, and notarization remain pending.** The manual [Ministry installers workflow](.github/workflows/build.yml) builds each supported target on its native platform and checks the packaged resources.

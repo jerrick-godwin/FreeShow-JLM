@@ -1,5 +1,7 @@
 name: Ministry installers
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
   workflow_call:
 jobs:
@@ -30,6 +32,8 @@ jobs:
         run: npm ci --include=optional
       - name: Prepare and verify complete offline content
         run: npm run prepare:bundled
+      - name: Test application
+        run: npm run test:unit
       - name: Test packaging safeguards
         run: node --test scripts/offlinePackage.test.js
       - name: Build application
